@@ -111,6 +111,9 @@ def generate_wordcloud():
         
         # WordCloud 생성 (안전한 설정으로)
         try:
+            print(f"Generating WordCloud with text: {text[:50]}...")
+            print(f"Korean font path: {KOREAN_FONT_PATH}")
+            
             wordcloud = WordCloud(
                 font_path=KOREAN_FONT_PATH,
                 width=800,
@@ -121,6 +124,8 @@ def generate_wordcloud():
                 colormap='viridis'
             ).generate(text)
             
+            print("WordCloud generated successfully")
+            
             # 이미지를 base64로 변환
             img_buffer = io.BytesIO()
             plt.figure(figsize=(10, 5))
@@ -130,8 +135,12 @@ def generate_wordcloud():
             plt.savefig(img_buffer, format='png', bbox_inches='tight', dpi=150)
             plt.close()
             
+            print("Image saved to buffer")
+            
             img_buffer.seek(0)
             img_str = base64.b64encode(img_buffer.getvalue()).decode()
+            
+            print("Image encoded to base64")
             
             return jsonify({
                 "status": "success",
@@ -139,6 +148,9 @@ def generate_wordcloud():
             })
             
         except Exception as wc_error:
+            print(f"WordCloud generation error: {str(wc_error)}")
+            import traceback
+            traceback.print_exc()
             return jsonify({
                 "error": "WordCloud generation failed",
                 "message": str(wc_error),
