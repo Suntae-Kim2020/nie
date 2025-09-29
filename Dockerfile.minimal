@@ -18,8 +18,8 @@ RUN pip install --no-cache-dir flask flask-cors wordcloud matplotlib pillow nump
 # Copy enhanced Flask app
 COPY flask_minimal.py .
 
-# Copy templates if available (optional)
-COPY templates/ ./templates/ 2>/dev/null || true
+# Copy templates directory 
+COPY templates/ ./templates/
 
 # Create necessary directories
 RUN mkdir -p /app/static
