@@ -50,10 +50,10 @@ jobs:
           --location=$GAR_LOCATION \
           --description="NIE Services Repository"
     
-    - name: Build and push Flask App image
+    - name: Build and push Flask App image (minimal version for testing)
       run: |
         IMAGE_TAG=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/flask-app:$GITHUB_SHA
-        docker build -f Dockerfile.flask -t $IMAGE_TAG .
+        docker build -f Dockerfile.minimal -t $IMAGE_TAG .
         docker push $IMAGE_TAG
         
         # Also tag as latest for main branch
@@ -63,46 +63,47 @@ jobs:
           docker push $LATEST_TAG
         fi
     
-    - name: Build and push MCP HTTP Server image
-      run: |
-        IMAGE_TAG=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/mcp-http:$GITHUB_SHA
-        docker build -f Dockerfile.mcp-http -t $IMAGE_TAG .
-        docker push $IMAGE_TAG
-        
-        if [ "$GITHUB_REF" = "refs/heads/main" ]; then
-          LATEST_TAG=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/mcp-http:latest
-          docker tag $IMAGE_TAG $LATEST_TAG
-          docker push $LATEST_TAG
-        fi
-    
-    - name: Build and push MCP SQLite Server image
-      run: |
-        IMAGE_TAG=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/mcp-sqlite:$GITHUB_SHA
-        docker build -f Dockerfile.mcp-sqlite -t $IMAGE_TAG .
-        docker push $IMAGE_TAG
-        
-        if [ "$GITHUB_REF" = "refs/heads/main" ]; then
-          LATEST_TAG=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/mcp-sqlite:latest
-          docker tag $IMAGE_TAG $LATEST_TAG
-          docker push $LATEST_TAG
-        fi
-    
-    - name: Build and push Monitoring Service image
-      run: |
-        IMAGE_TAG=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/monitoring:$GITHUB_SHA
-        docker build -f Dockerfile.monitoring -t $IMAGE_TAG .
-        docker push $IMAGE_TAG
-        
-        if [ "$GITHUB_REF" = "refs/heads/main" ]; then
-          LATEST_TAG=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/monitoring:latest
-          docker tag $IMAGE_TAG $LATEST_TAG
-          docker push $LATEST_TAG
-        fi
+# Temporarily disabled other services for testing minimal Flask app
+    # - name: Build and push MCP HTTP Server image
+    #   run: |
+    #     IMAGE_TAG=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/mcp-http:$GITHUB_SHA
+    #     docker build -f Dockerfile.mcp-http -t $IMAGE_TAG .
+    #     docker push $IMAGE_TAG
+    #     
+    #     if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+    #       LATEST_TAG=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/mcp-http:latest
+    #       docker tag $IMAGE_TAG $LATEST_TAG
+    #       docker push $LATEST_TAG
+    #     fi
+    # 
+    # - name: Build and push MCP SQLite Server image
+    #   run: |
+    #     IMAGE_TAG=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/mcp-sqlite:$GITHUB_SHA
+    #     docker build -f Dockerfile.mcp-sqlite -t $IMAGE_TAG .
+    #     docker push $IMAGE_TAG
+    #     
+    #     if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+    #       LATEST_TAG=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/mcp-sqlite:latest
+    #       docker tag $IMAGE_TAG $LATEST_TAG
+    #       docker push $LATEST_TAG
+    #     fi
+    # 
+    # - name: Build and push Monitoring Service image
+    #   run: |
+    #     IMAGE_TAG=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/monitoring:$GITHUB_SHA
+    #     docker build -f Dockerfile.monitoring -t $IMAGE_TAG .
+    #     docker push $IMAGE_TAG
+    #     
+    #     if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+    #       LATEST_TAG=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/monitoring:latest
+    #       docker tag $IMAGE_TAG $LATEST_TAG
+    #       docker push $LATEST_TAG
+    #     fi
     
     - name: Deploy to Cloud Run (Production only)
       if: github.ref == 'refs/heads/main'
       run: |
-        # Deploy Flask App
+        # Deploy minimal Flask App for testing
         gcloud run deploy nie-flask-app \
           --image=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/flask-app:latest \
           --region=$GCP_REGION \
@@ -110,43 +111,43 @@ jobs:
           --allow-unauthenticated \
           --port=5000 \
           --memory=512Mi \
-          --cpu=1
+          --cpu=1 \
+          --timeout=300
         
+        # Temporarily disabled other services for testing
         # Deploy MCP HTTP Server
-        gcloud run deploy nie-mcp-http \
-          --image=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/mcp-http:latest \
-          --region=$GCP_REGION \
-          --platform=managed \
-          --allow-unauthenticated \
-          --port=8080 \
-          --memory=512Mi \
-          --cpu=1
+        # gcloud run deploy nie-mcp-http \
+        #   --image=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/mcp-http:latest \
+        #   --region=$GCP_REGION \
+        #   --platform=managed \
+        #   --allow-unauthenticated \
+        #   --port=8080 \
+        #   --memory=512Mi \
+        #   --cpu=1
         
         # Deploy MCP SQLite Server
-        gcloud run deploy nie-mcp-sqlite \
-          --image=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/mcp-sqlite:latest \
-          --region=$GCP_REGION \
-          --platform=managed \
-          --no-allow-unauthenticated \
-          --port=3000 \
-          --memory=512Mi \
-          --cpu=1
+        # gcloud run deploy nie-mcp-sqlite \
+        #   --image=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/mcp-sqlite:latest \
+        #   --region=$GCP_REGION \
+        #   --platform=managed \
+        #   --no-allow-unauthenticated \
+        #   --port=3000 \
+        #   --memory=512Mi \
+        #   --cpu=1
         
         # Deploy Monitoring Service
-        gcloud run deploy nie-monitoring \
-          --image=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/monitoring:latest \
-          --region=$GCP_REGION \
-          --platform=managed \
-          --allow-unauthenticated \
-          --port=9090 \
-          --memory=512Mi \
-          --cpu=1
+        # gcloud run deploy nie-monitoring \
+        #   --image=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/monitoring:latest \
+        #   --region=$GCP_REGION \
+        #   --platform=managed \
+        #   --allow-unauthenticated \
+        #   --port=9090 \
+        #   --memory=512Mi \
+        #   --cpu=1
     
     - name: Print deployment URLs
       if: github.ref == 'refs/heads/main'
       run: |
-        echo "🚀 Deployment completed!"
+        echo "🚀 Minimal Flask App deployment completed for testing!"
         echo "Flask App: $(gcloud run services describe nie-flask-app --region=$GCP_REGION --format='value(status.url)')"
-        echo "MCP HTTP: $(gcloud run services describe nie-mcp-http --region=$GCP_REGION --format='value(status.url)')"
-        echo "MCP SQLite: $(gcloud run services describe nie-mcp-sqlite --region=$GCP_REGION --format='value(status.url)')"
-        echo "Monitoring: $(gcloud run services describe nie-monitoring --region=$GCP_REGION --format='value(status.url)')"
+        echo "Test with: curl \$(gcloud run services describe nie-flask-app --region=$GCP_REGION --format='value(status.url)')/health"
