@@ -248,10 +248,10 @@
                 </div>
 
                 <div class="form-group">
-                    <label>또는 PDF 파일 업로드</label>
+                    <label>또는 파일 업로드 (PDF/텍스트)</label>
                     <div class="file-upload" onclick="document.getElementById('pdfFile').click()">
-                        <input type="file" id="pdfFile" name="pdf_file" accept=".pdf" style="display: none;" onchange="handleFileUpload(event)">
-                        <p>📄 PDF 파일을 선택하거나 여기에 드래그하세요</p>
+                        <input type="file" id="pdfFile" name="file" accept=".pdf,.txt" style="display: none;" onchange="handleFileUpload(event)">
+                        <p>📄 PDF 또는 텍스트 파일을 선택하거나 여기에 드래그하세요</p>
                         <small>최대 35MB</small>
                     </div>
                     <div id="fileStatus" style="margin-top: 10px; font-size: 14px;"></div>
@@ -350,8 +350,8 @@
             const fileStatus = document.getElementById('fileStatus');
             
             if (file) {
-                if (file.type !== 'application/pdf') {
-                    fileStatus.innerHTML = '<span style="color: red;">❌ PDF 파일만 업로드 가능합니다.</span>';
+                if (file.type !== 'application/pdf' && file.type !== 'text/plain') {
+                    fileStatus.innerHTML = '<span style="color: red;">❌ PDF 또는 텍스트 파일만 업로드 가능합니다.</span>';
                     return;
                 }
                 
@@ -405,10 +405,10 @@
             e.preventDefault();
             
             const textInput = document.getElementById('textInput').value.trim();
-            const pdfFile = document.getElementById('pdfFile').files[0];
+            const uploadedFile = document.getElementById('pdfFile').files[0];
             
-            if (!textInput && !pdfFile) {
-                showStatus('텍스트를 입력하거나 PDF 파일을 업로드하세요.', 'error');
+            if (!textInput && !uploadedFile) {
+                showStatus('텍스트를 입력하거나 파일을 업로드하세요.', 'error');
                 return;
             }
 
