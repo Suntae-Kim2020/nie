@@ -95,6 +95,15 @@ def request_entity_too_large(error):
         "status": "error"
     }), 413
 
+@app.errorhandler(415)
+def unsupported_media_type(error):
+    return jsonify({
+        "error": "Unsupported Media Type",
+        "message": "지원하지 않는 Content-Type입니다. JSON 또는 form-data를 사용해주세요.",
+        "supported_types": ["application/json", "multipart/form-data", "application/x-www-form-urlencoded", "text/plain"],
+        "status": "error"
+    }), 415
+
 @app.errorhandler(500)
 def internal_error(error):
     return jsonify({
@@ -133,11 +142,56 @@ def generate_wordcloud():
                 "status": "error"
             }), 413
         
-        data = request.get_json()
-        if not data:
-            return jsonify({"error": "No JSON data provided"}), 400
+        # 다양한 Content-Type 지원
+        text = ''
+        
+        # JSON 요청 처리
+        if request.is_json:
+            data = request.get_json()
+            if data:
+                text = data.get('text', '')
+        
+        # Form data 요청 처리 (파일 업로드 등)
+        elif request.content_type and 'multipart/form-data' in request.content_type:
+            text = request.form.get('text', '')
+            # 파일이 업로드된 경우
+            if 'file' in request.files:
+                file = request.files['file']
+                if file and file.filename:
+                    try:
+                        file_content = file.read().decode('utf-8')
+                        text = file_content if not text else text + '\n' + file_content
+                        print(f"📁 File uploaded: {file.filename}, size: {len(file_content)} chars")
+                    except Exception as file_error:
+                        print(f"❌ File reading error: {str(file_error)}")
+                        return jsonify({
+                            "error": "File reading failed",
+                            "message": f"파일을 읽을 수 없습니다: {str(file_error)}",
+                            "status": "error"
+                        }), 400
+        
+        # application/x-www-form-urlencoded 처리
+        elif request.content_type and 'application/x-www-form-urlencoded' in request.content_type:
+            text = request.form.get('text', '')
+        
+        # Raw text 처리
+        elif request.content_type and 'text/plain' in request.content_type:
+            text = request.get_data(as_text=True)
+        
+        # 기본값 처리
+        else:
+            # 마지막 시도: form에서 텍스트 가져오기
+            text = request.form.get('text', '') if request.form else ''
             
-        text = data.get('text', '')
+            if not text:
+                print(f"⚠️ Unsupported Content-Type: {request.content_type}")
+                return jsonify({
+                    "error": "Unsupported Content-Type",
+                    "message": f"지원하지 않는 Content-Type입니다: {request.content_type}",
+                    "supported_types": ["application/json", "multipart/form-data", "application/x-www-form-urlencoded", "text/plain"],
+                    "status": "error"
+                }), 415
+        
         if not text or not text.strip():
             return jsonify({"error": "No text provided or text is empty"}), 400
         
