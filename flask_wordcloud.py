@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from flask import Flask, render_template, request, jsonify, send_file
+from flask import Flask, render_template, request, jsonify, send_file, send_from_directory
 from flask_cors import CORS
+import os
 from wordcloud import WordCloud
 import matplotlib
 matplotlib.use('Agg')  # GUI 없는 백엔드 사용
@@ -42,6 +43,26 @@ def get_korean_font_path():
     return None
 
 KOREAN_FONT_PATH = get_korean_font_path()
+
+def serve_html_file(filename):
+    """HTML 파일을 안전하게 서빙"""
+    try:
+        if not filename.endswith('.html'):
+            filename += '.html'
+        
+        file_path = os.path.join(os.getcwd(), filename)
+        if not os.path.exists(file_path):
+            return jsonify({'error': f'파일을 찾을 수 없습니다: {filename}'}), 404
+            
+        with open(file_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        from flask import Response
+        return Response(content, mimetype='text/html')
+        
+    except Exception as e:
+        print(f"HTML 파일 서빙 오류: {e}")
+        return jsonify({'error': f'파일 읽기 오류: {str(e)}'}), 500
 
 # 사용자 정의 불용어 저장 파일 경로
 USER_STOPWORDS_FILE = 'user_stopwords.json'
@@ -370,8 +391,7 @@ def create_wordcloud(word_freq, shape='circle', color_mode='color', width=600, h
 @app.route('/')
 def index():
     """메인 포털 페이지"""
-    with open('index.html', 'r', encoding='utf-8') as f:
-        return f.read()
+    return serve_html_file('index.html')
 
 @app.route('/wordcloud')
 def wordcloud_page():
@@ -382,46 +402,39 @@ def wordcloud_page():
 @app.route('/bird-analysis')
 def bird_analysis():
     """조류 충돌 분석 메인"""
-    with open('bird_collision_analysis.html', 'r', encoding='utf-8') as f:
-        return f.read()
+    return serve_html_file('bird_collision_analysis.html')
 
 @app.route('/bird-dashboard')  
 def bird_dashboard():
     """조류 충돌 대시보드"""
-    with open('bird_collision_dashboard.html', 'r', encoding='utf-8') as f:
-        return f.read()
+    return serve_html_file('bird_collision_dashboard.html')
 
 @app.route('/bird-detailed-analysis')
 def bird_detailed_analysis():
     """조류 충돌 상세 분석"""
-    with open('bird_collision_detailed_analysis.html', 'r', encoding='utf-8') as f:
-        return f.read()
+    return serve_html_file('bird_collision_detailed_analysis.html')
 
 @app.route('/bird-map')
 def bird_map():
     """조류 충돌 지도"""
-    with open('bird_collision_map.html', 'r', encoding='utf-8') as f:
-        return f.read()
+    return serve_html_file('bird_collision_map.html')
 
 # NIE 다국어 서비스
 @app.route('/nie-multilingual')
 def nie_multilingual():
     """NIE 다국어 서비스"""
-    with open('nie_multilingual.html', 'r', encoding='utf-8') as f:
-        return f.read()
+    return serve_html_file('nie_multilingual.html')
 
 # 기타 페이지들
 @app.route('/policy-recommendations')
 def policy_recommendations():
     """정책 제안"""
-    with open('policy_recommendations.html', 'r', encoding='utf-8') as f:
-        return f.read()
+    return serve_html_file('policy_recommendations.html')
 
 @app.route('/monitoring-dashboard')
 def monitoring_dashboard():
     """실시간 모니터링 대시보드"""
-    with open('real_time_monitoring_dashboard.html', 'r', encoding='utf-8') as f:
-        return f.read()
+    return serve_html_file('real_time_monitoring_dashboard.html')
 
 
 @app.route('/favicon.ico')
@@ -442,7 +455,13 @@ def not_found(error):
 @app.errorhandler(500)
 def internal_error(error):
     """500 에러 처리"""
-    return jsonify({'error': '서버 내부 오류가 발생했습니다.'}), 500
+    print(f"서버 내부 오류: {error}")
+    import traceback
+    traceback.print_exc()
+    return jsonify({
+        'error': '서버 내부 오류가 발생했습니다.', 
+        'detail': str(error) if app.debug else None
+    }), 500
 
 @app.route('/generate', methods=['POST'])
 def generate_wordcloud():
