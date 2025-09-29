@@ -1,0 +1,30 @@
+FROM python:3.9-slim
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    cron \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY integrated_monitoring_system.py .
+COPY notification_system.py .
+COPY system_integration.py .
+
+# Create directories
+RUN mkdir -p /app/logs /app/data
+
+# Expose port for monitoring dashboard
+EXPOSE 9090
+
+# Run the monitoring system
+CMD ["python", "integrated_monitoring_system.py"]

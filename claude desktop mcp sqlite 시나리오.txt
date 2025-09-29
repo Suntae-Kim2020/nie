@@ -1,0 +1,116 @@
+# Claude Desktop MCP SQLite 시연 시나리오
+
+## 🎯 Claude Desktop MCP 시연 절차
+
+### 📋 사전 준비 (시연 전)
+
+1. **MCP 서버 상태 확인**
+   ```bash
+   # 현재 디렉토리에서 실행
+   cd /Users/suntaekim/nie
+   
+   # MCP 서버가 실행 중인지 확인
+   ps aux | grep mcp_standard_server
+   ```
+
+2. **필요시 MCP 서버 시작**
+   ```bash
+   # 백그라운드에서 HTTP 서버 실행 (옵션)
+   export DATABASE_PATH="/Users/suntaekim/nie/bird_collision_mcp.db"
+   export MCP_API_KEY="bird_collision_mcp_2024_secure_key_xyz789"
+   python3 mcp_http_server.py &
+   ```
+
+3. **Claude Desktop 설정 확인**
+   ```bash
+   # 설정 파일 확인
+   cat ~/Library/Application\ Support/Claude/claude_desktop_config.json
+   ```
+
+### 🚀 시연 시작
+
+1. **Claude Desktop 실행**
+   - Claude Desktop 앱 시작
+   - 새 채팅 창 열기
+
+2. **MCP 연결 상태 확인**
+   ```
+   MCP 서버가 연결되어 있나요? 사용 가능한 도구들을 보여주세요.
+   ```
+
+3. **데이터베이스 구조 탐색**
+   ```
+   조류충돌 데이터베이스의 테이블 구조를 보여주세요.
+   ```
+
+### 📊 주요 시연 쿼리들
+
+4. **기본 통계**
+   ```
+   조류충돌 데이터베이스의 전체 통계를 보여주세요.
+   ```
+
+5. **위험한 조류 종 분석**
+   ```
+   가장 위험한 조류 종 TOP 10을 분석해주세요.
+   ```
+
+6. **지역별 분석**
+   ```
+   지역별 조류충돌 사고 현황을 분석해주세요.
+   ```
+
+7. **계절별 패턴**
+   ```
+   계절별 조류충돌 패턴을 분석해주세요.
+   ```
+
+8. **월별 트렌드**
+   ```
+   2023-2024년 월별 조류충돌 트렌드를 보여주세요.
+   ```
+
+9. **버드세이버 효과**
+   ```
+   버드세이버 설치 효과를 분석해주세요.
+   ```
+
+10. **복합 분석**
+    ```
+    철새와 텃새의 충돌 패턴 차이를 분석해주세요.
+    ```
+
+### 🔧 문제 발생시 대처
+
+**MCP 연결 실패시:**
+1. Claude Desktop 완전 재시작
+2. 설정 파일 경로 확인
+3. Python 권한 확인
+
+**쿼리 실행 오류시:**
+1. 데이터베이스 파일 존재 확인
+2. SQL 문법 검증
+3. 테이블명 확인
+
+### 💡 시연 팁
+
+- **단계별 진행**: 간단한 쿼리부터 복잡한 분석까지
+- **결과 해석**: Claude가 제공하는 분석 결과 설명
+- **시각화 요청**: 차트나 그래프로 결과 표현 요청
+- **연관 질문**: 결과를 바탕으로 추가 질문 진행
+
+### 📁 파일 위치 정보
+
+- **MCP 서버**: `/Users/suntaekim/nie/mcp_standard_server.py`
+- **데이터베이스**: `/Users/suntaekim/nie/bird_collision_mcp.db`
+- **설정 파일**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **HTTP 서버**: `/Users/suntaekim/nie/mcp_http_server.py`
+
+### 🔑 주요 설정값
+
+- **데이터베이스 경로**: `/Users/suntaekim/nie/bird_collision_mcp.db`
+- **API 키**: `bird_collision_mcp_2024_secure_key_xyz789`
+- **HTTP 서버 포트**: `8080`
+- **ngrok URL**: `https://052dc2ff1152.ngrok-free.app`
+
+이 절차대로 하면 조류충돌 데이터베이스의 강력한 분석 기능을 효과적으로 시연할 수 있습니다!

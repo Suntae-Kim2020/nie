@@ -1,0 +1,48 @@
+# PostgreSQL MCP 테스트를 위한 Docker Compose 설정
+version: '3.8'
+
+services:
+  postgres:
+    image: postgis/postgis:15-3.3
+    container_name: bird_collision_postgres
+    environment:
+      POSTGRES_DB: bird_collision_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password123
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgresql_mcp_setup.sql:/docker-entrypoint-initdb.d/01-setup.sql
+      - ./insert_bird_collision_data.sql:/docker-entrypoint-initdb.d/02-data.sql
+    networks:
+      - mcp_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d bird_collision_db"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: bird_collision_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "8080:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - mcp_network
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
+  pgadmin_data:
+
+networks:
+  mcp_network:
+    driver: bridge

@@ -1,0 +1,42 @@
+{
+  "basic_stats": {
+    "description": "기본 통계 조회",
+    "query": "\n            SELECT \n                COUNT(*) as total_incidents,\n                COUNT(DISTINCT korean_name) as species_count,\n                COUNT(DISTINCT province) as province_count,\n                SUM(individual_count) as total_individuals,\n                MIN(observation_date) as first_date,\n                MAX(observation_date) as latest_date\n            FROM bird_collisions;\n            "
+  },
+  "top_dangerous_species": {
+    "description": "가장 위험한 조류 종 TOP 10",
+    "query": "\n            SELECT \n                korean_name,\n                migratory_type,\n                incident_count,\n                total_individuals,\n                affected_provinces\n            FROM species_statistics\n            LIMIT 10;\n            "
+  },
+  "province_ranking": {
+    "description": "지역별 사고 순위",
+    "query": "\n            SELECT \n                province,\n                total_incidents,\n                species_count,\n                total_individuals,\n                top_species\n            FROM province_statistics;\n            "
+  },
+  "facility_analysis": {
+    "description": "시설물별 분석",
+    "query": "\n            SELECT \n                facility_type,\n                incidents,\n                percentage,\n                species_affected,\n                with_bird_saver,\n                without_bird_saver\n            FROM facility_analysis;\n            "
+  },
+  "monthly_trends": {
+    "description": "월별 사고 추이",
+    "query": "\n            SELECT \n                year,\n                month,\n                incidents,\n                species_count,\n                total_individuals\n            FROM monthly_trends\n            ORDER BY year, month;\n            "
+  },
+  "seasonal_patterns": {
+    "description": "계절별 패턴 분석",
+    "query": "\n            SELECT * FROM seasonal_analysis;\n            "
+  },
+  "bird_saver_effectiveness": {
+    "description": "버드세이버 효과 분석",
+    "query": "\n            SELECT \n                bird_saver,\n                COUNT(*) as incidents,\n                COUNT(DISTINCT korean_name) as species_count,\n                AVG(individual_count) as avg_individuals,\n                COUNT(DISTINCT province) as provinces\n            FROM bird_collisions\n            WHERE bird_saver IN ('Y', 'N')\n            GROUP BY bird_saver;\n            "
+  },
+  "migratory_vs_resident": {
+    "description": "철새 vs 텃새 분석",
+    "query": "\n            SELECT \n                migratory_type,\n                COUNT(*) as incidents,\n                COUNT(DISTINCT korean_name) as species_count,\n                SUM(individual_count) as total_individuals,\n                COUNT(DISTINCT province) as affected_provinces\n            FROM bird_collisions\n            WHERE migratory_type IS NOT NULL\n            GROUP BY migratory_type\n            ORDER BY incidents DESC;\n            "
+  },
+  "geographic_hotspots": {
+    "description": "지리적 핫스팟 분석",
+    "query": "\n            SELECT \n                province,\n                korean_name,\n                COUNT(*) as incidents,\n                AVG(latitude) as avg_lat,\n                AVG(longitude) as avg_lng,\n                facility_type\n            FROM bird_collisions\n            WHERE latitude IS NOT NULL AND longitude IS NOT NULL\n            GROUP BY province, korean_name, facility_type\n            HAVING incidents >= 5\n            ORDER BY incidents DESC\n            LIMIT 20;\n            "
+  },
+  "yearly_comparison": {
+    "description": "연도별 비교 분석",
+    "query": "\n            SELECT \n                survey_year,\n                COUNT(*) as incidents,\n                COUNT(DISTINCT korean_name) as species_count,\n                COUNT(DISTINCT province) as affected_provinces,\n                SUM(individual_count) as total_individuals\n            FROM bird_collisions\n            GROUP BY survey_year\n            ORDER BY survey_year;\n            "
+  }
+}

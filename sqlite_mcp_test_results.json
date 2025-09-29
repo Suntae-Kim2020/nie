@@ -1,0 +1,56 @@
+{
+  "timestamp": "2025-09-29T15:43:42.576210",
+  "database_path": "bird_collision_mcp.db",
+  "test_results": {
+    "테이블 목록": [
+      [
+        "sqlite_sequence"
+      ],
+      [
+        "bird_collisions"
+      ]
+    ],
+    "뷰 목록": [
+      [
+        "species_statistics"
+      ],
+      [
+        "province_statistics"
+      ],
+      [
+        "monthly_trends"
+      ],
+      [
+        "facility_analysis"
+      ],
+      [
+        "seasonal_analysis"
+      ]
+    ],
+    "전체 레코드 수": [
+      [
+        8598
+      ]
+    ],
+    "샘플 데이터": [
+      [
+        "붉은머리오목눈이",
+        "경기도",
+        "기타",
+        "2023-01-01 00:00:00"
+      ],
+      [
+        "직박구리",
+        "경기도",
+        "방음벽",
+        "2023-01-01 00:00:00"
+      ],
+      [
+        "집비둘기",
+        "경기도",
+        "건물",
+        "2023-01-01 00:00:00"
+      ]
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+FROM python:3.9-slim
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    sqlite3 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY mcp_sqlite_server.py .
+COPY sqlite_mcp_setup.py .
+
+# Create directory for database
+RUN mkdir -p /app/data
+
+# Copy database file if exists
+COPY bird_collision_mcp.db /app/data/ 2>/dev/null || true
+
+# Expose port (if needed for future HTTP interface)
+EXPOSE 3000
+
+# Run the application
+CMD ["python", "mcp_sqlite_server.py"]

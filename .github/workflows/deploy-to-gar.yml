@@ -1,0 +1,140 @@
+name: Build and Deploy to Google Artifact Registry
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GAR_LOCATION: asia-northeast3
+  REPOSITORY: nie-services
+  
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      id-token: write
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v2
+      with:
+        workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+        service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+    
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+    
+    - name: Configure Docker to use gcloud as credential helper
+      run: |
+        gcloud auth configure-docker $GAR_LOCATION-docker.pkg.dev
+    
+    - name: Create Artifact Registry repository if it doesn't exist
+      run: |
+        gcloud artifacts repositories describe $REPOSITORY \
+          --location=$GAR_LOCATION \
+          --format="value(name)" || \
+        gcloud artifacts repositories create $REPOSITORY \
+          --repository-format=docker \
+          --location=$GAR_LOCATION \
+          --description="NIE Services Repository"
+    
+    - name: Build and push Flask App image
+      run: |
+        IMAGE_TAG=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/flask-app:$GITHUB_SHA
+        docker build -f Dockerfile.flask -t $IMAGE_TAG .
+        docker push $IMAGE_TAG
+        
+        # Also tag as latest for main branch
+        if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+          LATEST_TAG=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/flask-app:latest
+          docker tag $IMAGE_TAG $LATEST_TAG
+          docker push $LATEST_TAG
+        fi
+    
+    - name: Build and push MCP HTTP Server image
+      run: |
+        IMAGE_TAG=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/mcp-http:$GITHUB_SHA
+        docker build -f Dockerfile.mcp-http -t $IMAGE_TAG .
+        docker push $IMAGE_TAG
+        
+        if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+          LATEST_TAG=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/mcp-http:latest
+          docker tag $IMAGE_TAG $LATEST_TAG
+          docker push $LATEST_TAG
+        fi
+    
+    - name: Build and push MCP SQLite Server image
+      run: |
+        IMAGE_TAG=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/mcp-sqlite:$GITHUB_SHA
+        docker build -f Dockerfile.mcp-sqlite -t $IMAGE_TAG .
+        docker push $IMAGE_TAG
+        
+        if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+          LATEST_TAG=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/mcp-sqlite:latest
+          docker tag $IMAGE_TAG $LATEST_TAG
+          docker push $LATEST_TAG
+        fi
+    
+    - name: Build and push Monitoring Service image
+      run: |
+        IMAGE_TAG=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/monitoring:$GITHUB_SHA
+        docker build -f Dockerfile.monitoring -t $IMAGE_TAG .
+        docker push $IMAGE_TAG
+        
+        if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+          LATEST_TAG=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/monitoring:latest
+          docker tag $IMAGE_TAG $LATEST_TAG
+          docker push $LATEST_TAG
+        fi
+    
+    - name: Deploy to Cloud Run (Production only)
+      if: github.ref == 'refs/heads/main'
+      run: |
+        # Deploy Flask App
+        gcloud run deploy nie-flask-app \
+          --image=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/flask-app:latest \
+          --region=$GAR_LOCATION \
+          --platform=managed \
+          --allow-unauthenticated \
+          --port=5000 \
+          --memory=512Mi \
+          --cpu=1
+        
+        # Deploy MCP HTTP Server
+        gcloud run deploy nie-mcp-http \
+          --image=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/mcp-http:latest \
+          --region=$GAR_LOCATION \
+          --platform=managed \
+          --allow-unauthenticated \
+          --port=8080 \
+          --memory=512Mi \
+          --cpu=1
+        
+        # Deploy Monitoring Service
+        gcloud run deploy nie-monitoring \
+          --image=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/monitoring:latest \
+          --region=$GAR_LOCATION \
+          --platform=managed \
+          --allow-unauthenticated \
+          --port=9090 \
+          --memory=512Mi \
+          --cpu=1
+    
+    - name: Print deployment URLs
+      if: github.ref == 'refs/heads/main'
+      run: |
+        echo "🚀 Deployment completed!"
+        echo "Flask App: $(gcloud run services describe nie-flask-app --region=$GAR_LOCATION --format='value(status.url)')"
+        echo "MCP HTTP: $(gcloud run services describe nie-mcp-http --region=$GAR_LOCATION --format='value(status.url)')"
+        echo "Monitoring: $(gcloud run services describe nie-monitoring --region=$GAR_LOCATION --format='value(status.url)')"

@@ -1,0 +1,340 @@
+{
+  "facility_analysis": {
+    "basic_stats": [
+      {
+        "facility": "방음벽",
+        "accidents": 11479,
+        "regions": 17,
+        "species": 99,
+        "percentage": 75.9
+      },
+      {
+        "facility": "건물",
+        "accidents": 2624,
+        "regions": 17,
+        "species": 110,
+        "percentage": 17.4
+      },
+      {
+        "facility": "기타",
+        "accidents": 1015,
+        "regions": 17,
+        "species": 38,
+        "percentage": 6.7
+      }
+    ],
+    "species_by_facility": {
+      "방음벽": [
+        {
+          "species": "멧비둘기",
+          "count": 1865
+        },
+        {
+          "species": "직박구리",
+          "count": 716
+        },
+        {
+          "species": "참새",
+          "count": 552
+        },
+        {
+          "species": "물까치",
+          "count": 493
+        },
+        {
+          "species": "박새",
+          "count": 304
+        }
+      ],
+      "건물": [
+        {
+          "species": "멧비둘기",
+          "count": 252
+        },
+        {
+          "species": "참새",
+          "count": 110
+        },
+        {
+          "species": "직박구리",
+          "count": 105
+        },
+        {
+          "species": "되지빠귀",
+          "count": 82
+        },
+        {
+          "species": "박새",
+          "count": 67
+        }
+      ],
+      "기타": [
+        {
+          "species": "집비둘기",
+          "count": 135
+        },
+        {
+          "species": "멧비둘기",
+          "count": 32
+        },
+        {
+          "species": "참새",
+          "count": 19
+        },
+        {
+          "species": "직박구리",
+          "count": 13
+        },
+        {
+          "species": "붉은머리오목눈이",
+          "count": 13
+        }
+      ]
+    }
+  },
+  "species_risk_analysis": {
+    "high_risk_species": [
+      {
+        "rank": 1,
+        "species": "멧비둘기",
+        "migratory_type": "텃새",
+        "accidents": 2149,
+        "regions": 16,
+        "facilities": 3,
+        "risk_score": 2324
+      },
+      {
+        "rank": 2,
+        "species": "직박구리",
+        "migratory_type": "텃새",
+        "accidents": 834,
+        "regions": 17,
+        "facilities": 3,
+        "risk_score": 1019
+      },
+      {
+        "rank": 3,
+        "species": "참새",
+        "migratory_type": "텃새",
+        "accidents": 681,
+        "regions": 17,
+        "facilities": 3,
+        "risk_score": 866
+      },
+      {
+        "rank": 4,
+        "species": "물까치",
+        "migratory_type": "텃새",
+        "accidents": 511,
+        "regions": 13,
+        "facilities": 3,
+        "risk_score": 656
+      },
+      {
+        "rank": 5,
+        "species": "박새",
+        "migratory_type": "텃새",
+        "accidents": 380,
+        "regions": 17,
+        "facilities": 3,
+        "risk_score": 565
+      },
+      {
+        "rank": 6,
+        "species": "되지빠귀",
+        "migratory_type": "여름철새",
+        "accidents": 367,
+        "regions": 17,
+        "facilities": 3,
+        "risk_score": 552
+      },
+      {
+        "rank": 7,
+        "species": "집비둘기",
+        "migratory_type": "텃새",
+        "accidents": 345,
+        "regions": 13,
+        "facilities": 3,
+        "risk_score": 490
+      },
+      {
+        "rank": 8,
+        "species": "붉은머리오목눈이",
+        "migratory_type": "텃새",
+        "accidents": 337,
+        "regions": 15,
+        "facilities": 3,
+        "risk_score": 502
+      },
+      {
+        "rank": 9,
+        "species": "흰배지빠귀",
+        "migratory_type": "여름철새",
+        "accidents": 288,
+        "regions": 15,
+        "facilities": 3,
+        "risk_score": 453
+      },
+      {
+        "rank": 10,
+        "species": "물총새",
+        "migratory_type": "여름철새",
+        "accidents": 276,
+        "regions": 15,
+        "facilities": 3,
+        "risk_score": 441
+      },
+      {
+        "rank": 11,
+        "species": "밀화부리",
+        "migratory_type": "나그네새",
+        "accidents": 184,
+        "regions": 16,
+        "facilities": 3,
+        "risk_score": 359
+      },
+      {
+        "rank": 12,
+        "species": "노랑턱멧새",
+        "migratory_type": "텃새",
+        "accidents": 180,
+        "regions": 14,
+        "facilities": 3,
+        "risk_score": 335
+      },
+      {
+        "rank": 13,
+        "species": "호랑지빠귀",
+        "migratory_type": "여름철새",
+        "accidents": 145,
+        "regions": 15,
+        "facilities": 3,
+        "risk_score": 310
+      },
+      {
+        "rank": 14,
+        "species": "꿩",
+        "migratory_type": "텃새",
+        "accidents": 131,
+        "regions": 13,
+        "facilities": 2,
+        "risk_score": 271
+      },
+      {
+        "rank": 15,
+        "species": "까치",
+        "migratory_type": "텃새",
+        "accidents": 125,
+        "regions": 14,
+        "facilities": 3,
+        "risk_score": 280
+      },
+      {
+        "rank": 16,
+        "species": "노랑지빠귀",
+        "migratory_type": "겨울철새",
+        "accidents": 93,
+        "regions": 10,
+        "facilities": 3,
+        "risk_score": 208
+      },
+      {
+        "rank": 17,
+        "species": "곤줄박이",
+        "migratory_type": "텃새",
+        "accidents": 90,
+        "regions": 12,
+        "facilities": 3,
+        "risk_score": 225
+      },
+      {
+        "rank": 18,
+        "species": "딱새",
+        "migratory_type": "텃새",
+        "accidents": 89,
+        "regions": 16,
+        "facilities": 3,
+        "risk_score": 264
+      },
+      {
+        "rank": 19,
+        "species": "진박새",
+        "migratory_type": "텃새",
+        "accidents": 88,
+        "regions": 13,
+        "facilities": 3,
+        "risk_score": 233
+      },
+      {
+        "rank": 20,
+        "species": "쇠솔새",
+        "migratory_type": "나그네새",
+        "accidents": 81,
+        "regions": 15,
+        "facilities": 3,
+        "risk_score": 246
+      }
+    ],
+    "migratory_type_stats": [
+      {
+        "type": "텃새",
+        "accidents": 6532,
+        "species_count": 37,
+        "avg_individuals": 1.0
+      },
+      {
+        "type": "여름철새",
+        "accidents": 1299,
+        "species_count": 32,
+        "avg_individuals": 1.0
+      },
+      {
+        "type": "나그네새",
+        "accidents": 488,
+        "species_count": 34,
+        "avg_individuals": 1.0
+      },
+      {
+        "type": "겨울철새",
+        "accidents": 278,
+        "species_count": 25,
+        "avg_individuals": 1.0
+      },
+      {
+        "type": "길잃은새",
+        "accidents": 1,
+        "species_count": 1,
+        "avg_individuals": 1.0
+      }
+    ]
+  },
+  "risk_factors": {
+    "방음벽": {
+      "accident_freq": 11479,
+      "region_spread": 17,
+      "species_diversity": 98,
+      "no_bird_saver_rate": 98.73682376513634,
+      "risk_index": 7991.91070469815
+    },
+    "건물": {
+      "accident_freq": 2624,
+      "region_spread": 17,
+      "species_diversity": 109,
+      "no_bird_saver_rate": 99.6951219512195,
+      "risk_index": 5778.174168089081
+    },
+    "기타": {
+      "accident_freq": 1015,
+      "region_spread": 17,
+      "species_diversity": 37,
+      "no_bird_saver_rate": 96.1576354679803,
+      "risk_index": 4561.706750899492
+    }
+  },
+  "analysis_metadata": {
+    "total_accidents": 15118,
+    "analysis_date": "2025-09-23",
+    "data_period": "2023-2024",
+    "regions_covered": 17
+  }
+}

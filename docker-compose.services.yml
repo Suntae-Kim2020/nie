@@ -1,0 +1,105 @@
+version: '3.8'
+
+services:
+  # Flask WordCloud Web Application
+  flask-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.flask
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./data:/app/data
+      - ./templates:/app/templates
+    restart: unless-stopped
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # MCP HTTP Server
+  mcp-http:
+    build:
+      context: .
+      dockerfile: Dockerfile.mcp-http
+    ports:
+      - "8081:8080"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MCP_DATABASE_PATH=/app/data/bird_collision_mcp.db
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
+    networks:
+      - app-network
+    depends_on:
+      - mcp-sqlite
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # MCP SQLite Server
+  mcp-sqlite:
+    build:
+      context: .
+      dockerfile: Dockerfile.mcp-sqlite
+    environment:
+      - PYTHONUNBUFFERED=1
+      - SQLITE_DB_PATH=/app/data/bird_collision_mcp.db
+    volumes:
+      - ./data:/app/data
+      - sqlite-data:/app/data
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  # Integrated Monitoring System
+  monitoring:
+    build:
+      context: .
+      dockerfile: Dockerfile.monitoring
+    ports:
+      - "9090:9090"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MONITORING_INTERVAL=60
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    restart: unless-stopped
+    networks:
+      - app-network
+    depends_on:
+      - mcp-http
+      - mcp-sqlite
+
+  # Static File Server (HTTP Server)
+  file-server:
+    image: nginx:alpine
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    restart: unless-stopped
+    networks:
+      - app-network
+
+volumes:
+  sqlite-data:
+    driver: local
+
+networks:
+  app-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
