@@ -50,9 +50,22 @@ def serve_html_file(filename):
         if not filename.endswith('.html'):
             filename += '.html'
         
-        file_path = os.path.join(os.getcwd(), filename)
+        # Docker 환경에서는 /app 디렉토리 사용
+        base_dir = '/app' if os.path.exists('/app') else os.getcwd()
+        file_path = os.path.join(base_dir, filename)
+        
+        print(f"파일 경로 확인: {file_path}")
+        print(f"파일 존재 여부: {os.path.exists(file_path)}")
+        print(f"현재 디렉토리: {os.getcwd()}")
+        print(f"디렉토리 내용: {os.listdir(base_dir)}")
+        
         if not os.path.exists(file_path):
-            return jsonify({'error': f'파일을 찾을 수 없습니다: {filename}'}), 404
+            return jsonify({
+                'error': f'파일을 찾을 수 없습니다: {filename}',
+                'path': file_path,
+                'base_dir': base_dir,
+                'files': os.listdir(base_dir)
+            }), 404
             
         with open(file_path, 'r', encoding='utf-8') as f:
             content = f.read()
@@ -62,6 +75,8 @@ def serve_html_file(filename):
         
     except Exception as e:
         print(f"HTML 파일 서빙 오류: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': f'파일 읽기 오류: {str(e)}'}), 500
 
 # 사용자 정의 불용어 저장 파일 경로
