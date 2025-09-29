@@ -375,8 +375,11 @@ def generate_wordcloud():
             print("✅ Image encoded to base64 successfully")
             
             return jsonify({
-                "status": "success",
-                "image": f"data:image/png;base64,{img_str}",
+                "success": True,
+                "image": img_str,
+                "word_count": max_words,
+                "shape": "circle",
+                "message": f"워드클라우드 생성 완료! ({max_words}개 단어)",
                 "info": {
                     "text_size_mb": round(text_size_mb, 2),
                     "image_size_mb": round(img_size_mb, 2),
