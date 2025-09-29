@@ -15,8 +15,8 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy enhanced Flask app
-COPY flask_minimal.py .
+# Copy Flask wordcloud app
+COPY flask_wordcloud.py .
 
 # Copy templates directory 
 COPY templates/ ./templates/
@@ -32,4 +32,4 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:5000/health || exit 1
 
 # Run the application
-CMD ["python", "flask_minimal.py"]
+CMD ["python", "flask_wordcloud.py"]

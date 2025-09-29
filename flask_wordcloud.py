@@ -372,10 +372,20 @@ def index():
     """메인 페이지"""
     return render_template('wordcloud.html')
 
+@app.route('/wordcloud')
+def wordcloud_page():
+    """워드클라우드 페이지"""
+    return render_template('wordcloud.html')
+
 @app.route('/favicon.ico')
 def favicon():
     """Favicon 처리"""
     return '', 204  # No Content
+
+@app.route('/health')
+def health():
+    """Health check for Docker"""
+    return jsonify({'status': 'healthy', 'service': 'wordcloud'}), 200
 
 @app.errorhandler(404)
 def not_found(error):
@@ -476,7 +486,7 @@ if __name__ == '__main__':
         print("폰트 파일 존재: False (기본 폰트 사용)")
     
     # Cloud Run에서는 PORT 환경 변수를 사용
-    port = int(os.environ.get('PORT', 5001))
+    port = int(os.environ.get('PORT', 5000))
     print(f"서버 포트: {port}")
     
     app.run(debug=False, host='0.0.0.0', port=port)
