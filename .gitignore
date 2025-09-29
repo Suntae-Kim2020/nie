@@ -102,16 +102,17 @@ user_stopwords.json
 *.gpkg
 *.xlsx
 
-# Large data files - commented out to allow upload
-# *.dbf
-# *.fix
-# *.prj
-# *.shp
-# *.shx
-# F006_20250118_30.*
+# Large data files (>100MB limit for GitHub)
+*.dbf
+*.fix
+*.prj
+*.shp
+*.shx
+F006_20250118_30.*
+조류유리창_충돌사고_2023_2024_전국.gpkg
 
-# Database files - keeping small ones for demo
-# bird_collision_mcp.db
+# Keep essential database files for demo
+# bird_collision_mcp.db (keeping this one)
 
 # Google Cloud
 .gcloudignore
