@@ -23,10 +23,25 @@ app = Flask(__name__)
 CORS(app)  # CORS 허용
 app.config['MAX_CONTENT_LENGTH'] = 35 * 1024 * 1024  # 35MB 최대 파일 크기
 
-# 한글 폰트 경로 설정 (시스템에 따라 조정 필요)
-KOREAN_FONT_PATH = '/System/Library/Fonts/AppleSDGothicNeo.ttc'  # macOS
-# KOREAN_FONT_PATH = 'C:/Windows/Fonts/malgun.ttf'  # Windows
-# KOREAN_FONT_PATH = '/usr/share/fonts/truetype/nanum/NanumGothic.ttf'  # Ubuntu
+# 한글 폰트 경로 설정 (환경에 따라 동적 탐지)
+def get_korean_font_path():
+    """한글 폰트 경로를 자동으로 찾습니다."""
+    possible_paths = [
+        '/usr/share/fonts/truetype/nanum/NanumGothic.ttf',  # Ubuntu/Docker
+        '/usr/share/fonts/truetype/nanum/NanumBarunGothic.ttf',  # Ubuntu/Docker
+        '/System/Library/Fonts/AppleSDGothicNeo.ttc',  # macOS
+        'C:/Windows/Fonts/malgun.ttf',  # Windows
+        '/usr/share/fonts/nanum/NanumGothic.ttf',  # Alternative path
+    ]
+    
+    for path in possible_paths:
+        if os.path.exists(path):
+            return path
+    
+    print("⚠️ 한글 폰트를 찾을 수 없습니다. 기본 폰트를 사용합니다.")
+    return None
+
+KOREAN_FONT_PATH = get_korean_font_path()
 
 # 사용자 정의 불용어 저장 파일 경로
 USER_STOPWORDS_FILE = 'user_stopwords.json'
@@ -317,7 +332,7 @@ def create_wordcloud(word_freq, shape='circle', color_mode='color', width=600, h
         'background_color': 'white',
         'max_words': len(word_freq),
         'colormap': colormap,
-        'font_path': KOREAN_FONT_PATH if os.path.exists(KOREAN_FONT_PATH) else None,
+        'font_path': KOREAN_FONT_PATH if KOREAN_FONT_PATH and os.path.exists(KOREAN_FONT_PATH) else None,
         'relative_scaling': 0.5,
         'min_font_size': 12,
         'max_font_size': 100,
@@ -454,8 +469,11 @@ def download_wordcloud():
 
 if __name__ == '__main__':
     print("Flask WordCloud 서버 시작...")
-    print(f"한글 폰트 경로: {KOREAN_FONT_PATH}")
-    print(f"폰트 파일 존재: {os.path.exists(KOREAN_FONT_PATH)}")
+    print(f"한글 폰트 경로: {KOREAN_FONT_PATH or '폰트를 찾을 수 없음'}")
+    if KOREAN_FONT_PATH:
+        print(f"폰트 파일 존재: {os.path.exists(KOREAN_FONT_PATH)}")
+    else:
+        print("폰트 파일 존재: False (기본 폰트 사용)")
     
     # Cloud Run에서는 PORT 환경 변수를 사용
     port = int(os.environ.get('PORT', 5001))
