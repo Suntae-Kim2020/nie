@@ -22,8 +22,7 @@ COPY sqlite_mcp_setup.py .
 # Create directory for database
 RUN mkdir -p /app/data
 
-# Copy database file if exists
-COPY bird_collision_mcp.db /app/data/ 2>/dev/null || true
+# Database will be created at runtime if not present
 
 # Expose port (if needed for future HTTP interface)
 EXPOSE 3000
