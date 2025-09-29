@@ -429,7 +429,7 @@
             try {
                 const formData = new FormData(this);
                 
-                const response = await fetch('/generate_wordcloud', {
+                const response = await fetch('/generate', {
                     method: 'POST',
                     body: formData
                 });
