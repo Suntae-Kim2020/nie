@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>조류 보호 정책 및 가이드라인</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Malgun Gothic', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f8f9fa;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 80px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            margin-bottom: 40px;
+        }
+
+        .doc-info {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .doc-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .meta-item {
+            text-align: center;
+        }
+
+        .meta-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .meta-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .content {
+            padding: 60px 0;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: white;
+            border-radius: 15px;
+            margin-bottom: 40px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #666;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .nav-tab.active {
+            color: #667eea;
+            background: #f8f9fa;
+        }
+
+        .nav-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .policy-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .policy-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f1f3f4;
+        }
+
+        .card-icon {
+            font-size: 2rem;
+            margin-right: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .policy-section {
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 15px;
+            padding-left: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .policy-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .policy-item {
+            background: #f8f9fa;
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s;
+        }
+
+        .policy-item:hover {
+            background: #e3f2fd;
+            transform: translateX(5px);
+        }
+
+        .policy-item strong {
+            color: #333;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 30px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 80px;
+            margin-bottom: 30px;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: 20px;
+            top: 5px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            border: 4px solid white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .timeline-year {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .timeline-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+        }
+
+        .guideline-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+        }
+
+        .guideline-table th,
+        .guideline-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .guideline-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: bold;
+        }
+
+        .guideline-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            border-left: 5px solid #667eea;
+        }
+
+        .highlight-box h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .btn-group {
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            margin: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #667eea;
+            color: #667eea;
+        }
+
+        .btn-outline:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .accordion {
+            margin: 20px 0;
+        }
+
+        .accordion-item {
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .accordion-header {
+            padding: 20px;
+            background: #f8f9fa;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.3s;
+        }
+
+        .accordion-header:hover {
+            background: #e9ecef;
+        }
+
+        .accordion-content {
+            padding: 0 20px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s, padding 0.3s;
+        }
+
+        .accordion-content.active {
+            max-height: 1000px;
+            padding: 20px;
+        }
+
+        .download-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 40px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .nav-tabs {
+                flex-direction: column;
+            }
+            
+            .doc-meta {
+                grid-template-columns: 1fr;
+            }
+            
+            .timeline::before {
+                left: 15px;
+            }
+            
+            .timeline-item {
+                padding-left: 50px;
+            }
+            
+            .timeline-dot {
+                left: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <div class="container">
+            <h1>🐦 조류 보호 정책 및 가이드라인</h1>
+            <p>데이터 기반 분석과 실용적 해결방안</p>
+            
+            <div class="doc-info">
+                <div class="doc-meta">
+                    <div class="meta-item">
+                        <div class="meta-label">분석 데이터</div>
+                        <div class="meta-value">15,118건</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">분석 기간</div>
+                        <div class="meta-value">2023-2024년</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">대상 지역</div>
+                        <div class="meta-value">전국 17개 시도</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">작성 기관</div>
+                        <div class="meta-value">환경부 자연보전정책과</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="container">
+            <div class="nav-tabs">
+                <button class="nav-tab active" onclick="showTab('policy')">🏛️ 정책 기본방향</button>
+                <button class="nav-tab" onclick="showTab('guidelines')">🏗️ 설계 가이드라인</button>
+                <button class="nav-tab" onclick="showTab('management')">🚨 집중 관리방안</button>
+                <button class="nav-tab" onclick="showTab('integration')">🌍 도시계획 연계</button>
+            </div>
+
+            <!-- 정책 기본방향 탭 -->
+            <div id="policy" class="tab-content active">
+                <div class="policy-card">
+                    <div class="card-header">
+                        <span class="card-icon">🎯</span>
+                        <span class="card-title">정책 목표</span>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-number">30%</div>
+                            <div class="stat-label">3년 내 사고 감소 목표</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">50%</div>
+                            <div class="stat-label">5년 내 사고 감소 목표</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">70%</div>
+                            <div class="stat-label">10년 내 사고 감소 목표</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">2,500억</div>
+                            <div class="stat-label">5년간 총 투자 예산</div>
+                        </div>
+                    </div>
+
+                    <div class="policy-section">
+                        <div class="section-title">핵심 정책과제</div>
+                        <div class="accordion">
+                            <div class="accordion-item">
+                                <div class="accordion-header" onclick="toggleAccordion(this)">
+                                    📋 법제도 정비
+                                    <span>▼</span>
+                                </div>
+                                <div class="accordion-content">
+                                    <ul class="policy-list">
+                                        <li class="policy-item"><strong>건축법 시행령 개정:</strong> 조류 충돌 방지 설계 기준 신설</li>
+                                        <li class="policy-item"><strong>도로법 시행규칙 개정:</strong> 방음벽 설치 시 버드세이버 의무화</li>
+                                        <li class="policy-item"><strong>자연환경보전법 강화:</strong> 조류 서식지 보호구역 내 건축 제한</li>
+                                        <li class="policy-item"><strong>환경영향평가법 보완:</strong> 조류 이동경로 고려 의무화</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <div class="accordion-header" onclick="toggleAccordion(this)">
+                                    🔧 기술기준 및 가이드라인
+                                    <span>▼</span>
+                                </div>
+                                <div class="accordion-content">
+                                    <ul class="policy-list">
+                                        <li class="policy-item"><strong>방음벽 개선:</strong> 투명 유리 사용 금지, 무반사 소재 의무화</li>
+                                        <li class="policy-item"><strong>버드세이버 기준:</strong> 15cm 간격 격자형 배치</li>
+                                        <li class="policy-item"><strong>건물 설계:</strong> 대형 유리창 시 조류 인식 패턴 적용</li>
+                                        <li class="policy-item"><strong>조명 관리:</strong> 야간 조명 최소화 및 혼란 방지</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <div class="accordion-header" onclick="toggleAccordion(this)">
+                                    🗺️ 지역별 맞춤형 관리
+                                    <span>▼</span>
+                                </div>
+                                <div class="accordion-content">
+                                    <ul class="policy-list">
+                                        <li class="policy-item"><strong>1순위:</strong> 광주광역시 (2,982건 최고위험)</li>
+                                        <li class="policy-item"><strong>2순위:</strong> 전북특별자치도 (1,978건)</li>
+                                        <li class="policy-item"><strong>3순위:</strong> 전라남도 (1,874건)</li>
+                                        <li class="policy-item"><strong>관리방안:</strong> 전담팀 운영, 기존 시설 개선 우선</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="policy-card">
+                    <div class="card-header">
+                        <span class="card-icon">⏱️</span>
+                        <span class="card-title">실행 로드맵</span>
+                    </div>
+                    
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-year">1년차 (2024년)</div>
+                            <div class="timeline-content">
+                                <ul class="policy-list">
+                                    <li class="policy-item">관련 법령 개정 추진</li>
+                                    <li class="policy-item">기술 가이드라인 개발 및 보급</li>
+                                    <li class="policy-item">고위험 지역 우선 개선사업 착수</li>
+                                    <li class="policy-item">전담 조직 구성 및 운영</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-year">2-3년차 (2025-2026년)</div>
+                            <div class="timeline-content">
+                                <ul class="policy-list">
+                                    <li class="policy-item">신규 건설 시설물 의무 적용</li>
+                                    <li class="policy-item">기존 시설물 단계적 개선</li>
+                                    <li class="policy-item">지역별 맞춤형 관리체계 운영</li>
+                                    <li class="policy-item">성과 모니터링 및 평가</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-year">4-5년차 (2027-2028년)</div>
+                            <div class="timeline-content">
+                                <ul class="policy-list">
+                                    <li class="policy-item">정책 효과 평가 및 보완</li>
+                                    <li class="policy-item">우수사례 확산 및 표준화</li>
+                                    <li class="policy-item">국제적 경험 공유 및 협력</li>
+                                    <li class="policy-item">차세대 기술 개발 및 적용</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 설계 가이드라인 탭 -->
+            <div id="guidelines" class="tab-content">
+                <div class="policy-card">
+                    <div class="card-header">
+                        <span class="card-icon">📐</span>
+                        <span class="card-title">설계 원칙</span>
+                    </div>
+                    
+                    <div class="policy-section">
+                        <div class="section-title">4대 핵심 원칙</div>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-number">👁️</div>
+                                <div class="stat-label">가시성 확보<br>15cm 간격 격자형</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">🚫</div>
+                                <div class="stat-label">투명성 최소화<br>맞은편 유리창 금지</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">💡</div>
+                                <div class="stat-label">조명 관리<br>상향 조명 금지</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">🌳</div>
+                                <div class="stat-label">환경 고려<br>서식지 조성</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="policy-section">
+                        <div class="section-title">시설물별 상세 기준</div>
+                        <table class="guideline-table">
+                            <thead>
+                                <tr>
+                                    <th>시설물</th>
+                                    <th>필수 사항</th>
+                                    <th>권장 사항</th>
+                                    <th>금지 사항</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>방음벽</strong></td>
+                                    <td>불투명 소재 사용<br>15cm 격자 패턴</td>
+                                    <td>높이 3m 이하<br>덩굴식물 녹화</td>
+                                    <td>투명 아크릴/유리<br>대형 연속면</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>고층건물</strong></td>
+                                    <td>유리면적 60% 이하<br>자동 조명 제어</td>
+                                    <td>발코니, 차양 활용<br>분할 설치</td>
+                                    <td>전면 유리 커튼월<br>상향 장식 조명</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>저층건물</strong></td>
+                                    <td>반사방지 필름<br>외부 그릴 설치</td>
+                                    <td>다층 조경 식재<br>조류 급수시설</td>
+                                    <td>대형 통창<br>고반사 소재</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="policy-card">
+                    <div class="card-header">
+                        <span class="card-icon">🏆</span>
+                        <span class="card-title">조류친화건축 인증제</span>
+                    </div>
+                    
+                    <div class="highlight-box">
+                        <h3>🎖️ 인증 등급 및 혜택</h3>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-number">우수</div>
+                                <div class="stat-label">건축비 지원 1억원<br>취득세 50% 감면</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">양호</div>
+                                <div class="stat-label">건축비 지원 5천만원<br>취득세 30% 감면</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">보통</div>
+                                <div class="stat-label">용적률 10% 완화<br>친환경 인증 가산점</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 집중 관리방안 탭 -->
+            <div id="management" class="tab-content">
+                <div class="policy-card">
+                    <div class="card-header">
+                        <span class="card-icon">🎯</span>
+                        <span class="card-title">고위험 지역 관리</span>
+                    </div>
+                    
+                    <div class="policy-section">
+                        <div class="section-title">상위 5개 고위험 지역</div>
+                        <table class="guideline-table">
+                            <thead>
+                                <tr>
+                                    <th>순위</th>
+                                    <th>지역</th>
+                                    <th>사고 건수</th>
+                                    <th>주요 시설</th>
+                                    <th>관리 등급</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1위</td>
+                                    <td>광주광역시</td>
+                                    <td>2,982건</td>
+                                    <td>방음벽 (83%)</td>
+                                    <td><span style="color: red; font-weight: bold;">최고위험</span></td>
+                                </tr>
+                                <tr>
+                                    <td>2위</td>
+                                    <td>전북특별자치도</td>
+                                    <td>1,978건</td>
+                                    <td>방음벽 (98%)</td>
+                                    <td><span style="color: orange; font-weight: bold;">고위험</span></td>
+                                </tr>
+                                <tr>
+                                    <td>3위</td>
+                                    <td>전라남도</td>
+                                    <td>1,874건</td>
+                                    <td>방음벽 (94%)</td>
+                                    <td><span style="color: orange; font-weight: bold;">고위험</span></td>
+                                </tr>
+                                <tr>
+                                    <td>4위</td>
+                                    <td>경기도</td>
+                                    <td>1,642건</td>
+                                    <td>방음벽 (78%)</td>
+                                    <td><span style="color: gold; font-weight: bold;">중위험</span></td>
+                                </tr>
+                                <tr>
+                                    <td>5위</td>
+                                    <td>경상남도</td>
+                                    <td>1,023건</td>
+                                    <td>방음벽 (90%)</td>
+                                    <td><span style="color: gold; font-weight: bold;">중위험</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="policy-section">
+                        <div class="section-title">3단계 집중 관리 프로세스</div>
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-year">1단계: 응급조치</div>
+                                <div class="timeline-content">
+                                    <ul class="policy-list">
+                                        <li class="policy-item">투명 방음벽 현황 전수 조사</li>
+                                        <li class="policy-item">임시 버드세이버 긴급 설치 (3개월 내)</li>
+                                        <li class="policy-item">실시간 모니터링 체계 구축</li>
+                                        <li class="policy-item">24시간 주민 신고센터 운영</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="timeline-item">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-year">2단계: 본격개선</div>
+                                <div class="timeline-content">
+                                    <ul class="policy-list">
+                                        <li class="policy-item">방음벽 교체 및 개선사업 착수</li>
+                                        <li class="policy-item">조류 친화적 도시계획 수립</li>
+                                        <li class="policy-item">지역별 조류 보호 조례 제정</li>
+                                        <li class="policy-item">시민 참여 모니터링단 구성</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="timeline-item">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-year">3단계: 사후관리</div>
+                                <div class="timeline-content">
+                                    <ul class="policy-list">
+                                        <li class="policy-item">개선 효과 모니터링 및 평가</li>
+                                        <li class="policy-item">추가 보완 조치 시행</li>
+                                        <li class="policy-item">우수 사례 타 지역 확산</li>
+                                        <li class="policy-item">장기 유지관리 체계 구축</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 도시계획 연계 탭 -->
+            <div id="integration" class="tab-content">
+                <div class="policy-card">
+                    <div class="card-header">
+                        <span class="card-icon">🌍</span>
+                        <span class="card-title">도시계획 연계 전략</span>
+                    </div>
+                    
+                    <div class="policy-section">
+                        <div class="section-title">계획 단계별 연계 방안</div>
+                        <div class="accordion">
+                            <div class="accordion-item">
+                                <div class="accordion-header" onclick="toggleAccordion(this)">
+                                    🗺️ 광역계획 단계
+                                    <span>▼</span>
+                                </div>
+                                <div class="accordion-content">
+                                    <ul class="policy-list">
+                                        <li class="policy-item"><strong>조류 이동 회랑:</strong> 주요 이동 경로를 그린벨트로 보호</li>
+                                        <li class="policy-item"><strong>고층건물 제한:</strong> 이동 경로 상 고층 건물 높이 제한</li>
+                                        <li class="policy-item"><strong>습지 보전:</strong> 조류 서식지 및 기착지 보전</li>
+                                        <li class="policy-item"><strong>녹지네트워크:</strong> 연속된 녹지 축 조성</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <div class="accordion-header" onclick="toggleAccordion(this)">
+                                    🏙️ 도시기본계획
+                                    <span>▼</span>
+                                </div>
+                                <div class="accordion-content">
+                                    <ul class="policy-list">
+                                        <li class="policy-item"><strong>용도지역 계획:</strong> 조류 서식지 주변 개발 밀도 제한</li>
+                                        <li class="policy-item"><strong>교통계획:</strong> 조류 이동 시기 소음 제한 구역 설정</li>
+                                        <li class="policy-item"><strong>공원녹지계획:</strong> 조류 친화적 도시공원 조성</li>
+                                        <li class="policy-item"><strong>환경보전계획:</strong> 조류 보호구역 지정 및 관리</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <div class="accordion-header" onclick="toggleAccordion(this)">
+                                    🏗️ 도시관리계획
+                                    <span>▼</span>
+                                </div>
+                                <div class="accordion-content">
+                                    <ul class="policy-list">
+                                        <li class="policy-item"><strong>지구단위계획:</strong> 조류 친화적 건축 가이드라인 적용</li>
+                                        <li class="policy-item"><strong>건축규제:</strong> 조류 충돌 방지 설계 의무화</li>
+                                        <li class="policy-item"><strong>조경계획:</strong> 조류 서식지 조성 및 먹이원 제공</li>
+                                        <li class="policy-item"><strong>시설물계획:</strong> 방음벽 등 조류 친화적 설계</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box">
+                        <h3>🛣️ 주요 조류 이동 경로</h3>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-number">서해안</div>
+                                <div class="stat-label">중국 → 서해안 → 내륙</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">동해안</div>
+                                <div class="stat-label">러시아 → 동해안 → 내륙</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">내륙</div>
+                                <div class="stat-label">산맥 따라 남북 이동</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">도서</div>
+                                <div class="stat-label">제주, 울릉도 중간기착</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="download-section">
+                <h3>📁 정책 문서 다운로드</h3>
+                <p>조류 보호 정책 및 가이드라인 전체 문서를 다운로드하여 활용하실 수 있습니다.</p>
+                <div class="btn-group">
+                    <button class="btn" onclick="downloadPolicyDocument()">📄 전체 정책 문서 다운로드</button>
+                    <button class="btn btn-outline" onclick="generateSummaryReport()">📊 요약 보고서 생성</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            // 모든 탭 비활성화
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // 선택된 탭 활성화
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        function toggleAccordion(header) {
+            const content = header.nextElementSibling;
+            const icon = header.querySelector('span');
+            
+            if (content.classList.contains('active')) {
+                content.classList.remove('active');
+                icon.textContent = '▼';
+            } else {
+                // 다른 아코디언 닫기
+                document.querySelectorAll('.accordion-content.active').forEach(item => {
+                    item.classList.remove('active');
+                    item.previousElementSibling.querySelector('span').textContent = '▼';
+                });
+                
+                content.classList.add('active');
+                icon.textContent = '▲';
+            }
+        }
+
+        function downloadPolicyDocument() {
+            // 정책 문서 다운로드 시뮬레이션
+            const link = document.createElement('a');
+            link.href = './comprehensive_policy_document.json';
+            link.download = '조류보호종합정책문서.json';
+            link.click();
+        }
+
+        function generateSummaryReport() {
+            // 요약 보고서 생성
+            const reportWindow = window.open('', '_blank');
+            reportWindow.document.write(`
+                <html>
+                <head>
+                    <title>조류 보호 정책 요약 보고서</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; }
+                        h1 { color: #667eea; border-bottom: 2px solid #667eea; padding-bottom: 10px; }
+                        h2 { color: #333; margin-top: 30px; }
+                        .highlight { background: #e3f2fd; padding: 15px; border-radius: 5px; margin: 15px 0; }
+                        .stats { display: flex; gap: 20px; margin: 20px 0; }
+                        .stat-box { background: #f5f5f5; padding: 15px; border-radius: 5px; text-align: center; flex: 1; }
+                    </style>
+                </head>
+                <body>
+                    <h1>조류 유리창 충돌사고 예방 정책 요약</h1>
+                    
+                    <div class="highlight">
+                        <strong>핵심 목표:</strong> 조류 충돌사고 10년 내 70% 감소
+                    </div>
+                    
+                    <div class="stats">
+                        <div class="stat-box">
+                            <h3>15,118건</h3>
+                            <p>분석 사고 건수</p>
+                        </div>
+                        <div class="stat-box">
+                            <h3>75.9%</h3>
+                            <p>방음벽 사고 비율</p>
+                        </div>
+                        <div class="stat-box">
+                            <h3>2,500억원</h3>
+                            <p>5년간 투자 예산</p>
+                        </div>
+                    </div>
+                    
+                    <h2>주요 정책과제</h2>
+                    <ul>
+                        <li>법제도 정비: 건축법, 도로법 등 관련 법령 개정</li>
+                        <li>기술기준 마련: 버드세이버 설치 기준, 건물 설계 가이드라인</li>
+                        <li>지역별 관리: 고위험 지역 집중 관리 체계 구축</li>
+                        <li>도시계획 연계: 조류 이동 경로 고려한 친환경 도시 조성</li>
+                    </ul>
+                    
+                    <h2>기대 효과</h2>
+                    <ul>
+                        <li>조류 생태계 보호 및 생물다양성 유지</li>
+                        <li>친환경 건축 문화 확산</li>
+                        <li>지속가능한 도시개발 모델 제시</li>
+                        <li>국제적 환경보호 선진국 도약</li>
+                    </ul>
+                </body>
+                </html>
+            `);
+        }
+
+        // 페이지 로드 시 애니메이션
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.policy-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 200);
+            });
+        });
+    </script>
+</body>
+</html>

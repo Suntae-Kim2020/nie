@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>조류 유리창 충돌사고 인터랙티브 지도</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Leaflet HeatMap Plugin -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet-heat.min.js"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Malgun Gothic', Arial, sans-serif;
+            background: #f5f5f5;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .container {
+            display: flex;
+            height: calc(100vh - 80px);
+        }
+
+        .sidebar {
+            width: 350px;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .map-container {
+            flex: 1;
+            position: relative;
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+
+        .sidebar-section {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .sidebar-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #4facfe;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #3d8bfe;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .stats-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #4facfe;
+        }
+
+        .stats-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4facfe;
+        }
+
+        .stats-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .chart-container {
+            height: 200px;
+            margin-top: 10px;
+        }
+
+        .legend {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            min-width: 200px;
+        }
+
+        .legend h4 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            z-index: 2000;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4facfe;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .popup-content {
+            max-width: 250px;
+        }
+
+        .popup-content h4 {
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        .popup-info {
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .popup-info strong {
+            color: #4facfe;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🐦 조류 유리창 충돌사고 인터랙티브 지도</h1>
+        <p>2023-2024년 전국 데이터 시각화</p>
+    </div>
+
+    <div class="container">
+        <div class="sidebar">
+            <div class="sidebar-section">
+                <h3>📊 전체 현황</h3>
+                <div class="stats-card">
+                    <div class="stats-number" id="totalCount">15,118</div>
+                    <div class="stats-label">총 사고 건수</div>
+                </div>
+                <div class="stats-card">
+                    <div class="stats-number" id="displayedCount">2,000</div>
+                    <div class="stats-label">지도 표시 건수</div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>🎛️ 지도 제어</h3>
+                <div class="control-group">
+                    <label for="viewMode">표시 모드</label>
+                    <select id="viewMode">
+                        <option value="markers">개별 지점</option>
+                        <option value="heatmap">히트맵</option>
+                        <option value="clusters">클러스터</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="facilityFilter">시설물 유형</label>
+                    <select id="facilityFilter">
+                        <option value="all">전체</option>
+                        <option value="방음벽">방음벽</option>
+                        <option value="건물">건물</option>
+                        <option value="기타">기타</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label for="speciesFilter">조류 종</label>
+                    <select id="speciesFilter">
+                        <option value="all">전체</option>
+                    </select>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="applyFilters()">필터 적용</button>
+                    <button class="btn btn-secondary" onclick="resetFilters()">초기화</button>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>📈 시도별 통계</h3>
+                <div class="chart-container">
+                    <canvas id="sidoChart"></canvas>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>📅 월별 통계</h3>
+                <div class="chart-container">
+                    <canvas id="monthlyChart"></canvas>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>🐦 조류 종별 통계</h3>
+                <div class="chart-container">
+                    <canvas id="speciesChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="map-container">
+            <div id="map"></div>
+            <div class="legend">
+                <h4>범례</h4>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #ff6b6b;"></div>
+                    <span>방음벽</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #4ecdc4;"></div>
+                    <span>건물</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #45b7d1;"></div>
+                    <span>기타</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <div>데이터를 불러오는 중...</div>
+    </div>
+
+    <script>
+        // 전역 변수
+        let map;
+        let markers = [];
+        let heatmapLayer;
+        let originalData = [];
+        let filteredData = [];
+        let charts = {};
+
+        // 색상 매핑
+        const facilityColors = {
+            '방음벽': '#ff6b6b',
+            '건물': '#4ecdc4',
+            '기타': '#45b7d1',
+            '미분류': '#999999'
+        };
+
+        // 지도 초기화
+        function initMap() {
+            map = L.map('map').setView([36.5, 127.5], 7);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+        }
+
+        // 데이터 로드
+        async function loadData() {
+            try {
+                // GeoJSON 데이터 로드
+                const geoResponse = await fetch('./bird_collision_data.geojson');
+                const geoData = await geoResponse.json();
+                originalData = geoData.features;
+                filteredData = [...originalData];
+
+                // 통계 데이터 로드
+                const statsResponse = await fetch('./bird_statistics.json');
+                const statsData = await statsResponse.json();
+
+                // 조류 종 필터 옵션 추가
+                populateSpeciesFilter(statsData.species_stats);
+
+                // 차트 초기화
+                initCharts(statsData);
+
+                // 마커 초기화
+                updateMapDisplay();
+
+                // 로딩 화면 숨기기
+                document.getElementById('loading').style.display = 'none';
+
+            } catch (error) {
+                console.error('데이터 로드 오류:', error);
+                document.getElementById('loading').innerHTML = '<div style="color: red;">데이터 로드에 실패했습니다.</div>';
+            }
+        }
+
+        // 조류 종 필터 옵션 추가
+        function populateSpeciesFilter(speciesStats) {
+            const select = document.getElementById('speciesFilter');
+            speciesStats.forEach(species => {
+                const option = document.createElement('option');
+                option.value = species.name;
+                option.textContent = `${species.name} (${species.count})`;
+                select.appendChild(option);
+            });
+        }
+
+        // 마커 생성
+        function createMarker(feature) {
+            const coords = feature.geometry.coordinates;
+            const props = feature.properties;
+            
+            const color = facilityColors[props.facility_type] || facilityColors['미분류'];
+            
+            const marker = L.circleMarker([coords[1], coords[0]], {
+                radius: 6,
+                fillColor: color,
+                color: '#fff',
+                weight: 1,
+                opacity: 1,
+                fillOpacity: 0.8
+            });
+
+            // 팝업 내용
+            const popupContent = `
+                <div class="popup-content">
+                    <h4>${props.species}</h4>
+                    <div class="popup-info"><strong>시설물:</strong> ${props.facility_type}</div>
+                    <div class="popup-info"><strong>철새유형:</strong> ${props.migratory_type}</div>
+                    <div class="popup-info"><strong>관찰일:</strong> ${props.observation_date}</div>
+                    <div class="popup-info"><strong>지역:</strong> ${props.sido}</div>
+                    <div class="popup-info"><strong>서식지:</strong> ${props.habitat_type}</div>
+                </div>
+            `;
+            
+            marker.bindPopup(popupContent);
+            return marker;
+        }
+
+        // 히트맵 생성
+        function createHeatmap() {
+            const heatData = filteredData.map(feature => {
+                const coords = feature.geometry.coordinates;
+                return [coords[1], coords[0], 1]; // [lat, lng, intensity]
+            });
+
+            if (heatmapLayer) {
+                map.removeLayer(heatmapLayer);
+            }
+
+            heatmapLayer = L.heatLayer(heatData, {
+                radius: 20,
+                blur: 15,
+                maxZoom: 10,
+                gradient: {
+                    0.2: 'blue',
+                    0.4: 'green', 
+                    0.6: 'yellow',
+                    0.8: 'orange',
+                    1.0: 'red'
+                }
+            }).addTo(map);
+        }
+
+        // 지도 표시 업데이트
+        function updateMapDisplay() {
+            const viewMode = document.getElementById('viewMode').value;
+            
+            // 기존 마커 제거
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+            
+            // 히트맵 제거
+            if (heatmapLayer) {
+                map.removeLayer(heatmapLayer);
+            }
+
+            // 표시 개수 업데이트
+            document.getElementById('displayedCount').textContent = filteredData.length.toLocaleString();
+
+            if (viewMode === 'markers') {
+                // 개별 마커 표시
+                filteredData.forEach(feature => {
+                    const marker = createMarker(feature);
+                    markers.push(marker);
+                    marker.addTo(map);
+                });
+            } else if (viewMode === 'heatmap') {
+                // 히트맵 표시
+                createHeatmap();
+            } else if (viewMode === 'clusters') {
+                // 클러스터 표시 (추후 구현)
+                filteredData.forEach(feature => {
+                    const marker = createMarker(feature);
+                    markers.push(marker);
+                    marker.addTo(map);
+                });
+            }
+        }
+
+        // 필터 적용
+        function applyFilters() {
+            const facilityFilter = document.getElementById('facilityFilter').value;
+            const speciesFilter = document.getElementById('speciesFilter').value;
+
+            filteredData = originalData.filter(feature => {
+                const props = feature.properties;
+                
+                if (facilityFilter !== 'all' && props.facility_type !== facilityFilter) {
+                    return false;
+                }
+                
+                if (speciesFilter !== 'all' && props.species !== speciesFilter) {
+                    return false;
+                }
+                
+                return true;
+            });
+
+            updateMapDisplay();
+        }
+
+        // 필터 초기화
+        function resetFilters() {
+            document.getElementById('facilityFilter').value = 'all';
+            document.getElementById('speciesFilter').value = 'all';
+            document.getElementById('viewMode').value = 'markers';
+            
+            filteredData = [...originalData];
+            updateMapDisplay();
+        }
+
+        // 차트 초기화
+        function initCharts(statsData) {
+            // 시도별 차트
+            const sidoCtx = document.getElementById('sidoChart').getContext('2d');
+            charts.sido = new Chart(sidoCtx, {
+                type: 'bar',
+                data: {
+                    labels: statsData.sido_stats.slice(0, 8).map(item => item.name),
+                    datasets: [{
+                        data: statsData.sido_stats.slice(0, 8).map(item => item.count),
+                        backgroundColor: '#4facfe',
+                        borderColor: '#3d8bfe',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+
+            // 월별 차트
+            const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+            const monthNames = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'];
+            charts.monthly = new Chart(monthlyCtx, {
+                type: 'line',
+                data: {
+                    labels: statsData.monthly_stats.map(item => monthNames[parseInt(item.month) - 1]),
+                    datasets: [{
+                        data: statsData.monthly_stats.map(item => item.count),
+                        borderColor: '#ff6b6b',
+                        backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+
+            // 조류 종별 차트
+            const speciesCtx = document.getElementById('speciesChart').getContext('2d');
+            charts.species = new Chart(speciesCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: statsData.species_stats.map(item => item.name),
+                    datasets: [{
+                        data: statsData.species_stats.map(item => item.count),
+                        backgroundColor: [
+                            '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', 
+                            '#ffeaa7', '#dda0dd', '#98d8c8', '#f7dc6f',
+                            '#bb8fce', '#85c1e9'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: { size: 10 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 이벤트 리스너
+        document.getElementById('viewMode').addEventListener('change', updateMapDisplay);
+
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            initMap();
+            loadData();
+        });
+    </script>
+</body>
+</html>

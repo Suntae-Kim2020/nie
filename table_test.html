@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>테이블 테스트</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; font-weight: bold; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        button { padding: 10px 20px; margin: 10px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>📊 테이블 기능 테스트</h1>
+    
+    <div id="status"></div>
+    
+    <button onclick="loadData()">데이터 로드</button>
+    <button onclick="updateTable()">테이블 업데이트</button>
+    <button onclick="clearTable()">테이블 초기화</button>
+    
+    <h2>📋 지역별 상세 통계</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>시도</th>
+                <th>총 사고</th>
+                <th>방음벽</th>
+                <th>건물</th>
+                <th>기타</th>
+                <th>주요 조류</th>
+            </tr>
+        </thead>
+        <tbody id="testTableBody">
+            <!-- 데이터가 여기에 들어갑니다 -->
+        </tbody>
+    </table>
+
+    <script>
+        let testData = [];
+
+        async function loadData() {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = '<div class="status">데이터 로딩 중...</div>';
+            
+            try {
+                const response = await fetch('./bird_analysis_results.json');
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const results = await response.json();
+                testData = results.raw_data || [];
+                
+                statusDiv.innerHTML = `<div class="status success">✅ 데이터 로드 성공: ${testData.length}개 레코드</div>`;
+                console.log('로드된 데이터 샘플:', testData.slice(0, 3));
+                
+            } catch (error) {
+                console.log('실제 데이터 로드 실패, 시뮬레이션 데이터 생성');
+                generateTestData();
+                statusDiv.innerHTML = `<div class="status success">🔄 시뮬레이션 데이터 생성: ${testData.length}개 레코드</div>`;
+            }
+        }
+
+        function generateTestData() {
+            const regions = ['서울특별시', '경기도', '부산광역시', '대구광역시', '광주광역시', '대전광역시', '울산광역시', '인천광역시'];
+            const species = ['멧비둘기', '직박구리', '참새', '물까치', '박새', '되지빠귀', '집비둘기', '붉은머리오목눈이'];
+            const facilities = ['방음벽', '건물', '기타'];
+            
+            testData = [];
+            for (let i = 0; i < 200; i++) {
+                const year = Math.random() < 0.6 ? 2024 : 2023;
+                const month = Math.floor(Math.random() * 12);
+                const day = Math.floor(Math.random() * 28) + 1;
+                const date = new Date(year, month, day);
+                
+                testData.push({
+                    관찰일자: date.toISOString().split('T')[0],
+                    시도명: regions[Math.floor(Math.random() * regions.length)],
+                    한글보통명: species[Math.floor(Math.random() * species.length)],
+                    시설물유형명: facilities[Math.floor(Math.random() * facilities.length)],
+                    개체수: Math.floor(Math.random() * 5) + 1
+                });
+            }
+        }
+
+        function updateTable() {
+            const tbody = document.getElementById('testTableBody');
+            const statusDiv = document.getElementById('status');
+            
+            if (!testData || testData.length === 0) {
+                statusDiv.innerHTML = '<div class="status error">❌ 먼저 데이터를 로드하세요</div>';
+                return;
+            }
+            
+            tbody.innerHTML = '';
+            
+            // 시도별 통계 계산
+            const sidoStats = {};
+            testData.forEach(item => {
+                const sido = item.시도명;
+                if (!sidoStats[sido]) {
+                    sidoStats[sido] = { 
+                        total: 0, 
+                        방음벽: 0, 
+                        건물: 0, 
+                        기타: 0, 
+                        species: new Set() 
+                    };
+                }
+                sidoStats[sido].total++;
+                if (item.시설물유형명) {
+                    sidoStats[sido][item.시설물유형명] = (sidoStats[sido][item.시설물유형명] || 0) + 1;
+                }
+                if (item.한글보통명) {
+                    sidoStats[sido].species.add(item.한글보통명);
+                }
+            });
+            
+            // 상위 15개 시도 정렬
+            const sortedSidos = Object.entries(sidoStats)
+                .sort((a, b) => b[1].total - a[1].total)
+                .slice(0, 15);
+            
+            console.log('계산된 통계:', sidoStats);
+            console.log('정렬된 시도:', sortedSidos);
+            
+            sortedSidos.forEach(([sido, stats]) => {
+                const topSpecies = Array.from(stats.species).slice(0, 2).join(', ');
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${sido}</td>
+                    <td>${stats.total.toLocaleString()}</td>
+                    <td>${(stats.방음벽 || 0).toLocaleString()}</td>
+                    <td>${(stats.건물 || 0).toLocaleString()}</td>
+                    <td>${(stats.기타 || 0).toLocaleString()}</td>
+                    <td>${topSpecies || '데이터 없음'}</td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            statusDiv.innerHTML = `<div class="status success">✅ 테이블 업데이트 완료: ${sortedSidos.length}개 지역 표시</div>`;
+        }
+
+        function clearTable() {
+            const tbody = document.getElementById('testTableBody');
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #666;">테이블이 초기화되었습니다</td></tr>';
+            
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = '<div class="status">🔄 테이블 초기화 완료</div>';
+        }
+
+        // 페이지 로드 시 자동 실행
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            setTimeout(updateTable, 1000);
+        });
+    </script>
+</body>
+</html>

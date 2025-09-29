@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>조류 유리창 충돌사고 분석 포털</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Malgun Gothic', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .hero-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 40px;
+            opacity: 0.9;
+            animation: fadeInUp 1s ease-out 0.2s both;
+        }
+
+        .stats-banner {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+            animation: fadeInUp 1s ease-out 0.4s both;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .cta-buttons {
+            margin-top: 50px;
+            animation: fadeInUp 1s ease-out 0.6s both;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            margin: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            font-weight: bold;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .btn-primary {
+            background: #fff;
+            color: #667eea;
+            border-color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #f8f9fa;
+            color: #5a67d8;
+        }
+
+        .features {
+            padding: 100px 0;
+            background: #f8f9fa;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 60px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .feature-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .feature-description {
+            color: #666;
+            line-height: 1.7;
+            margin-bottom: 25px;
+        }
+
+        .feature-link {
+            display: inline-block;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+            border-bottom: 2px solid transparent;
+            transition: border-color 0.3s;
+        }
+
+        .feature-link:hover {
+            border-bottom-color: #667eea;
+        }
+
+        .tools-section {
+            padding: 100px 0;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+        }
+
+        .tool-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s;
+        }
+
+        .tool-card:hover {
+            transform: scale(1.05);
+        }
+
+        .tool-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .footer {
+            background: #2c3e50;
+            color: white;
+            padding: 50px 0;
+            text-align: center;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 30px;
+        }
+
+        .footer-section h3 {
+            margin-bottom: 20px;
+            color: #3498db;
+        }
+
+        .footer-section a {
+            color: #bdc3c7;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 10px;
+            transition: color 0.3s;
+        }
+
+        .footer-section a:hover {
+            color: #3498db;
+        }
+
+        .copyright {
+            border-top: 1px solid #34495e;
+            padding-top: 20px;
+            color: #bdc3c7;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero p {
+                font-size: 1.1rem;
+            }
+            
+            .stats-banner {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <section class="hero">
+        <div class="hero-content">
+            <h1>🐦 조류 유리창 충돌사고 분석</h1>
+            <p>2023-2024년 전국 데이터 기반 종합 분석 및 시각화 플랫폼</p>
+            
+            <div class="stats-banner">
+                <div class="stat-item">
+                    <div class="stat-number">15,118</div>
+                    <div class="stat-label">총 사고 건수</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">17</div>
+                    <div class="stat-label">분석 지역 (시도)</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">200+</div>
+                    <div class="stat-label">영향받은 조류 종</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">76%</div>
+                    <div class="stat-label">방음벽 사고 비율</div>
+                </div>
+            </div>
+
+            <div class="cta-buttons">
+                <a href="/bird-detailed-analysis" class="btn btn-primary">📊 상세 분석 보기</a>
+                <a href="/bird-map" class="btn">🗺️ 인터랙티브 지도</a>
+                <a href="/bird-dashboard" class="btn">📈 종합 대시보드</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">분석 기능</h2>
+            <p class="section-subtitle">다양한 관점에서 조류 충돌사고 데이터를 분석할 수 있습니다</p>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📈</div>
+                    <h3 class="feature-title">상세 통계 분석</h3>
+                    <p class="feature-description">
+                        지역별, 시간별, 조류 종별 상세한 통계 분석을 제공합니다. 
+                        15,118건의 데이터를 다각도로 분석하여 의미있는 인사이트를 도출합니다.
+                    </p>
+                    <a href="/bird-detailed-analysis" class="feature-link">분석 보기 →</a>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🗺️</div>
+                    <h3 class="feature-title">인터랙티브 지도</h3>
+                    <p class="feature-description">
+                        Leaflet 기반의 대화형 지도로 사고 발생 지점을 시각화합니다. 
+                        히트맵, 클러스터링 등 다양한 표시 모드를 지원합니다.
+                    </p>
+                    <a href="/bird-map" class="feature-link">지도 보기 →</a>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3 class="feature-title">종합 대시보드</h3>
+                    <p class="feature-description">
+                        실시간 모니터링이 가능한 종합 대시보드입니다. 
+                        필터링, 차트, 데이터 내보내기 등 고급 기능을 제공합니다.
+                    </p>
+                    <a href="/bird-dashboard" class="feature-link">대시보드 보기 →</a>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🔧</div>
+                    <h3 class="feature-title">워드 클라우드 생성</h3>
+                    <p class="feature-description">
+                        웹페이지나 PDF 문서의 텍스트를 분석하여 아름다운 워드 클라우드를 생성합니다. 
+                        다양한 모양과 색상 옵션을 제공합니다.
+                    </p>
+                    <a href="/wordcloud" class="feature-link">워드 클라우드 생성기 →</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="tools-section">
+        <div class="container">
+            <h2 class="section-title">분석 도구</h2>
+            <p class="section-subtitle">다양한 데이터 분석 및 시각화 도구를 제공합니다</p>
+            
+            <div class="tools-grid">
+                <div class="tool-card">
+                    <div class="tool-icon">🔍</div>
+                    <h3>데이터 탐색</h3>
+                    <p>15,118건의 조류 충돌사고 데이터를 자유롭게 탐색하고 필터링할 수 있습니다.</p>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-icon">📊</div>
+                    <h3>통계 분석</h3>
+                    <p>지역별, 시간별, 조류 종별 다양한 통계 분석과 시각화를 제공합니다.</p>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-icon">🗺️</div>
+                    <h3>지도 시각화</h3>
+                    <p>인터랙티브 지도를 통해 공간적 분포와 패턴을 직관적으로 파악할 수 있습니다.</p>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-icon">📈</div>
+                    <h3>트렌드 분석</h3>
+                    <p>시계열 데이터를 통해 사고 발생 트렌드와 계절적 패턴을 분석합니다.</p>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-icon">💾</div>
+                    <h3>데이터 내보내기</h3>
+                    <p>분석 결과를 CSV, 이미지 등 다양한 형태로 내보낼 수 있습니다.</p>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-icon">📝</div>
+                    <h3>보고서 생성</h3>
+                    <p>분석 결과를 기반으로 종합 보고서를 자동 생성합니다.</p>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-icon">🌿</div>
+                    <h3><a href="ecological_collision_analysis_map.html" style="color: white; text-decoration: none;">생태지도 분석</a></h3>
+                    <p>금강유역 생태지도와 조류충돌 데이터를 결합한 공간분석 결과를 확인하세요.</p>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-icon">🌐</div>
+                    <h3><a href="/nie-multilingual" style="color: white; text-decoration: none;">NIE 다국어 사이트</a></h3>
+                    <p>국립생태원 소개를 한국어, 영어, 불어, 베트남어, 러시아어로 제공하는 다국어 웹사이트입니다.</p>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-icon">🎨</div>
+                    <h3><a href="/wordcloud" style="color: white; text-decoration: none;">워드클라우드 생성기</a></h3>
+                    <p>Python 기반 고성능 워드클라우드 생성기. 완벽한 모양 지원과 고품질 이미지 출력을 제공합니다.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>분석 페이지</h3>
+                    <a href="/bird-detailed-analysis">상세 통계 분석</a>
+                    <a href="/bird-map">인터랙티브 지도</a>
+                    <a href="/bird-dashboard">종합 대시보드</a>
+                    <a href="/wordcloud">워드 클라우드 생성기</a>
+                </div>
+
+                <div class="footer-section">
+                    <h3>데이터 정보</h3>
+                    <a href="#">데이터 출처</a>
+                    <a href="#">분석 방법론</a>
+                    <a href="#">업데이트 내역</a>
+                    <a href="#">데이터 품질</a>
+                </div>
+
+                <div class="footer-section">
+                    <h3>활용 방안</h3>
+                    <a href="#">조류 보호 정책</a>
+                    <a href="#">건축 가이드라인</a>
+                    <a href="#">연구 활용</a>
+                    <a href="#">교육 자료</a>
+                </div>
+
+                <div class="footer-section">
+                    <h3>기술 정보</h3>
+                    <a href="#">개발 환경</a>
+                    <a href="#">사용 라이브러리</a>
+                    <a href="#">API 문서</a>
+                    <a href="#">소스 코드</a>
+                </div>
+            </div>
+            
+            <div class="copyright">
+                <p>&copy; 2024 조류 유리창 충돌사고 분석 프로젝트. 모든 권리 보유.</p>
+                <p>이 프로젝트는 조류 보호와 안전한 도시 환경 조성을 위해 개발되었습니다.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 페이지 로드 시 애니메이션 효과
+        document.addEventListener('DOMContentLoaded', function() {
+            // 스크롤 시 애니메이션 효과
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+
+            // 관찰할 요소들
+            document.querySelectorAll('.feature-card, .tool-card').forEach(card => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(card);
+            });
+
+            // 통계 숫자 애니메이션
+            animateNumbers();
+        });
+
+        function animateNumbers() {
+            const statNumbers = document.querySelectorAll('.stat-number');
+            
+            statNumbers.forEach(number => {
+                const target = parseInt(number.textContent.replace(/,/g, ''));
+                const duration = 2000; // 2초
+                const increment = target / (duration / 16); // 60fps
+                let current = 0;
+
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= target) {
+                        current = target;
+                        clearInterval(timer);
+                    }
+                    
+                    if (number.textContent.includes('%')) {
+                        number.textContent = Math.floor(current) + '%';
+                    } else if (number.textContent.includes('+')) {
+                        number.textContent = Math.floor(current) + '+';
+                    } else {
+                        number.textContent = Math.floor(current).toLocaleString();
+                    }
+                }, 16);
+            });
+        }
+
+        // 부드러운 스크롤 효과
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>

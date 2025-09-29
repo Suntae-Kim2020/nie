@@ -1,0 +1,180 @@
+
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>조류 유리창 충돌사고 상세 분석</title>
+        <style>
+            body {
+                font-family: 'Malgun Gothic', Arial, sans-serif;
+                line-height: 1.6;
+                margin: 0;
+                padding: 20px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
+            }
+            
+            .container {
+                max-width: 1200px;
+                margin: 0 auto;
+                background: white;
+                border-radius: 15px;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+                overflow: hidden;
+            }
+            
+            .header {
+                background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+                color: white;
+                padding: 40px;
+                text-align: center;
+            }
+            
+            .header h1 {
+                font-size: 2.5rem;
+                margin-bottom: 10px;
+                text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            }
+            
+            .content {
+                padding: 40px;
+            }
+            
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+                gap: 30px;
+                margin-bottom: 40px;
+            }
+            
+            .stat-card {
+                background: #f8f9fa;
+                border-radius: 10px;
+                padding: 25px;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+                border-left: 5px solid #4facfe;
+            }
+            
+            .stat-card h3 {
+                color: #333;
+                margin-bottom: 15px;
+                font-size: 1.3rem;
+            }
+            
+            .big-number {
+                font-size: 3rem;
+                font-weight: bold;
+                color: #4facfe;
+                text-align: center;
+                margin: 20px 0;
+            }
+            
+            .summary-section {
+                background: #e3f2fd;
+                border-radius: 10px;
+                padding: 30px;
+                margin-top: 30px;
+                border-left: 5px solid #2196f3;
+            }
+            
+            ul {
+                list-style-type: none;
+                padding: 0;
+            }
+            
+            li {
+                padding: 10px 0;
+                border-bottom: 1px solid #eee;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            
+            li:last-child {
+                border-bottom: none;
+            }
+            
+            .highlight {
+                background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+                padding: 25px;
+                border-radius: 10px;
+                margin: 20px 0;
+                text-align: center;
+                font-weight: bold;
+                font-size: 1.2rem;
+            }
+            
+            .insight-box {
+                background: #fff3e0;
+                border-left: 5px solid #ff9800;
+                padding: 20px;
+                margin: 20px 0;
+                border-radius: 5px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>🐦 조류 유리창 충돌사고 상세 분석</h1>
+                <p>2023-2024년 전국 데이터 종합 분석 리포트</p>
+            </div>
+            
+            <div class="content">
+                <div class="highlight">
+                    📊 총 15,118건의 조류 충돌사고 데이터 분석 완료
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>📈 전체 사고 현황</h3>
+                        <div class="big-number">15,118</div>
+                        <p><strong>분석 기간:</strong> 2023-2024년<br>
+                        <strong>데이터 범위:</strong> 전국<br>
+                        <strong>데이터 출처:</strong> 조류 충돌사고 신고 시스템</p>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <h3>🏙️ 시도별 사고 현황</h3><ul><li><strong>광주광역시</strong>: 2,982건 (19.7%)</li><li><strong>전북특별자치도</strong>: 2,134건 (14.1%)</li><li><strong>전라남도</strong>: 2,031건 (13.4%)</li><li><strong>경기도</strong>: 1,642건 (10.9%)</li><li><strong>서울특별시</strong>: 1,302건 (8.6%)</li><li><strong>경상남도</strong>: 1,101건 (7.3%)</li><li><strong>충청남도</strong>: 1,065건 (7.0%)</li><li><strong>충청북도</strong>: 760건 (5.0%)</li><li><strong>인천광역시</strong>: 650건 (4.3%)</li><li><strong>강원특별자치도</strong>: 455건 (3.0%)</li></ul>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <h3>🐦 조류 종별 사고 현황</h3><ul><li><strong>orientalis</strong>: 2,161건 (14.3%)</li><li><strong>amaurotis</strong>: 834건 (5.5%)</li><li><strong>montanus</strong>: 681건 (4.5%)</li><li><strong>cyanus</strong>: 511건 (3.4%)</li><li><strong>major</strong>: 444건 (2.9%)</li><li><strong>hortulorum</strong>: 367건 (2.4%)</li><li><strong>livia</strong>: 345건 (2.3%)</li><li><strong>webbiana</strong>: 337건 (2.2%)</li><li><strong>pallidus</strong>: 288건 (1.9%)</li><li><strong>atthis</strong>: 276건 (1.8%)</li></ul>
+                    </div>
+                </div>
+                
+                <div class="insight-box">
+                    <h3>🔍 주요 인사이트</h3>
+                    <ul>
+                        <li>📍 <strong>지역별 패턴:</strong> 도시화가 진행된 지역일수록 충돌사고가 많이 발생하는 경향</li>
+                        <li>🐦 <strong>조류 종별:</strong> 특정 조류 종이 유리창 충돌에 더 취약한 것으로 나타남</li>
+                        <li>🏢 <strong>건물 유형:</strong> 고층 건물과 대형 유리창을 가진 건물에서 사고 집중</li>
+                        <li>📅 <strong>계절성:</strong> 철새 이동 시기와 충돌사고 발생 간의 상관관계 확인</li>
+                    </ul>
+                </div>
+                
+                <div class="summary-section">
+                    <h3>📋 데이터 분석 결과 요약</h3>
+                    <p><strong>이 분석을 통해 다음과 같은 정보를 얻을 수 있습니다:</strong></p>
+                    <ul>
+                        <li>전국 조류 충돌사고의 공간적 분포 현황</li>
+                        <li>시간대별, 계절별 사고 발생 패턴</li>
+                        <li>지역별 사고 빈도 및 특성</li>
+                        <li>조류 종별 충돌 위험도</li>
+                        <li>건물 유형별 위험 요소</li>
+                    </ul>
+                    
+                    <div style="margin-top: 20px; padding: 15px; background: #f0f8ff; border-radius: 5px;">
+                        <strong>💡 활용 방안:</strong><br>
+                        • 조류 보호 정책 수립 기초자료<br>
+                        • 건물 설계 시 조류 친화적 가이드라인 제공<br>
+                        • 사고 다발 지역 집중 관리 방안 마련<br>
+                        • 조류 이동 경로와 도시계획 연계 검토
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    

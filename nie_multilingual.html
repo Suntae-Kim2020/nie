@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">국립생태원 - 원장 인사말</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Malgun Gothic', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c5f3d 0%, #4a7c59 100%);
+            color: white;
+            padding: 20px 0;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .language-selector {
+            position: relative;
+        }
+
+        .lang-dropdown {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            min-width: 140px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .lang-dropdown:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background: white;
+            min-width: 140px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            border-radius: 10px;
+            z-index: 1000;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .dropdown-content.show {
+            display: block;
+        }
+
+        .lang-option {
+            color: #333;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            transition: background-color 0.3s;
+            cursor: pointer;
+        }
+
+        .lang-option:hover {
+            background-color: #f1f1f1;
+        }
+
+        .lang-option.active {
+            background-color: #2c5f3d;
+            color: white;
+        }
+
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .breadcrumb {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9rem;
+        }
+
+        .director-section {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 40px;
+            margin-bottom: 50px;
+        }
+
+        .director-photo {
+            text-align: center;
+        }
+
+        .director-photo img {
+            width: 250px;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .director-info h1 {
+            color: #2c5f3d;
+            margin-bottom: 10px;
+            font-size: 2.2rem;
+        }
+
+        .director-info .title {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+
+        .director-info .term {
+            background: #f8f9fa;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #2c5f3d;
+        }
+
+        .message-content {
+            line-height: 1.8;
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+        }
+
+        .goals-list {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 10px;
+            margin: 30px 0;
+        }
+
+        .goals-list h3 {
+            color: #2c5f3d;
+            margin-bottom: 20px;
+        }
+
+        .goals-list ol {
+            padding-left: 20px;
+        }
+
+        .goals-list li {
+            margin-bottom: 10px;
+            padding-left: 10px;
+        }
+
+        .signature {
+            text-align: right;
+            margin-top: 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2c5f3d;
+        }
+
+        .contact-info {
+            background: #2c5f3d;
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .contact-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+        .contact-item h3 {
+            margin-bottom: 15px;
+            color: #a8d5ba;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .director-section {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .director-photo img {
+                width: 200px;
+                height: 240px;
+            }
+
+            .director-info h1 {
+                font-size: 1.8rem;
+            }
+
+            .language-selector {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo" id="site-logo">국립생태원</div>
+            <div class="language-selector">
+                <div class="lang-dropdown" onclick="toggleDropdown()">
+                    <span id="current-lang">한국어 🌐</span>
+                </div>
+                <div class="dropdown-content" id="language-dropdown">
+                    <div class="lang-option active" data-lang="ko">한국어</div>
+                    <div class="lang-option" data-lang="en">English</div>
+                    <div class="lang-option" data-lang="fr">Français</div>
+                    <div class="lang-option" data-lang="vi">Tiếng Việt</div>
+                    <div class="lang-option" data-lang="ru">Русский</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="breadcrumb" id="breadcrumb">홈 > 기관소개 > 원장 인사말</div>
+
+        <div class="director-section">
+            <div class="director-photo">
+                <img src="https://www.nie.re.kr/resources/nie/images/sub/sub-greeting_04.png" alt="Director Photo" id="director-img">
+            </div>
+            <div class="director-info">
+                <h1 id="director-name">이창석</h1>
+                <div class="title" id="director-title">국립생태원장</div>
+                <div class="term" id="director-term">재임기간: 2025.1.23 ~ 현재</div>
+            </div>
+        </div>
+
+        <!-- Korean Content -->
+        <div id="content-ko" class="content-section">
+            <div class="message-content">
+                <p>안녕하십니까. 국립생태원장 이창석입니다.</p>
+                
+                <p>기후변화와 생물다양성 감소 등 전 지구적 환경 문제가 심화되고 있는 가운데, 국립생태원은 생태계의 다양성을 보전하고 관리하는 중추적 역할을 담당하고 있습니다.</p>
+
+                <div class="goals-list">
+                    <h3>국립생태원의 주요 목표</h3>
+                    <ol>
+                        <li>생태 다양성 보전 및 관리</li>
+                        <li>탄소중립 목표 달성 지원</li>
+                        <li>환경 복원 도구 개발</li>
+                        <li>생태 교육 프로그램 제공</li>
+                        <li>ESG 경영 실천</li>
+                    </ol>
+                </div>
+
+                <p>저희는 과학적 연구와 실증을 바탕으로 생태계 보전과 복원에 최선을 다하고 있으며, 국민 여러분께 양질의 생태 서비스를 제공하겠습니다.</p>
+
+                <p>앞으로도 국립생태원에 대한 여러분의 관심과 성원을 부탁드리며, 지속가능한 미래를 위해 함께 노력해 나가겠습니다.</p>
+            </div>
+            <div class="signature">국립생태원장 이창석</div>
+        </div>
+
+        <!-- English Content -->
+        <div id="content-en" class="content-section hidden">
+            <div class="message-content">
+                <p>Greetings. I am Lee Chang-seok, Director of the National Institute of Ecology.</p>
+                
+                <p>As global environmental challenges such as climate change and biodiversity loss intensify, the National Institute of Ecology plays a pivotal role in conserving and managing ecosystem diversity.</p>
+
+                <div class="goals-list">
+                    <h3>Main Objectives of NIE</h3>
+                    <ol>
+                        <li>Conservation and management of ecological diversity</li>
+                        <li>Supporting carbon neutrality goals</li>
+                        <li>Development of environmental restoration tools</li>
+                        <li>Providing ecological education programs</li>
+                        <li>Implementation of ESG practices</li>
+                    </ol>
+                </div>
+
+                <p>We are committed to ecosystem conservation and restoration based on scientific research and evidence, and we will provide high-quality ecological services to the public.</p>
+
+                <p>We ask for your continued interest and support for the National Institute of Ecology, and we will work together toward a sustainable future.</p>
+            </div>
+            <div class="signature">Lee Chang-seok, Director of National Institute of Ecology</div>
+        </div>
+
+        <!-- French Content -->
+        <div id="content-fr" class="content-section hidden">
+            <div class="message-content">
+                <p>Salutations. Je suis Lee Chang-seok, Directeur de l'Institut National d'Écologie.</p>
+                
+                <p>Alors que les défis environnementaux mondiaux tels que le changement climatique et la perte de biodiversité s'intensifient, l'Institut National d'Écologie joue un rôle central dans la conservation et la gestion de la diversité des écosystèmes.</p>
+
+                <div class="goals-list">
+                    <h3>Objectifs Principaux de l'INE</h3>
+                    <ol>
+                        <li>Conservation et gestion de la diversité écologique</li>
+                        <li>Soutien aux objectifs de neutralité carbone</li>
+                        <li>Développement d'outils de restauration environnementale</li>
+                        <li>Fourniture de programmes d'éducation écologique</li>
+                        <li>Mise en œuvre de pratiques ESG</li>
+                    </ol>
+                </div>
+
+                <p>Nous nous engageons dans la conservation et la restauration des écosystèmes basées sur la recherche scientifique et les preuves, et nous fournirons des services écologiques de haute qualité au public.</p>
+
+                <p>Nous demandons votre intérêt et votre soutien continus pour l'Institut National d'Écologie, et nous travaillerons ensemble vers un avenir durable.</p>
+            </div>
+            <div class="signature">Lee Chang-seok, Directeur de l'Institut National d'Écologie</div>
+        </div>
+
+        <!-- Vietnamese Content -->
+        <div id="content-vi" class="content-section hidden">
+            <div class="message-content">
+                <p>Xin chào. Tôi là Lee Chang-seok, Giám đốc Viện Sinh thái Quốc gia.</p>
+                
+                <p>Khi các thách thức môi trường toàn cầu như biến đổi khí hậu và suy giảm đa dạng sinh học ngày càng gia tăng, Viện Sinh thái Quốc gia đóng vai trò then chốt trong việc bảo tồn và quản lý đa dạng hệ sinh thái.</p>
+
+                <div class="goals-list">
+                    <h3>Mục Tiêu Chính của Viện Sinh thái Quốc gia</h3>
+                    <ol>
+                        <li>Bảo tồn và quản lý đa dạng sinh thái</li>
+                        <li>Hỗ trợ các mục tiêu trung hòa carbon</li>
+                        <li>Phát triển các công cụ phục hồi môi trường</li>
+                        <li>Cung cấp các chương trình giáo dục sinh thái</li>
+                        <li>Thực hiện các thực hành ESG</li>
+                    </ol>
+                </div>
+
+                <p>Chúng tôi cam kết bảo tồn và phục hồi hệ sinh thái dựa trên nghiên cứu khoa học và bằng chứng, và chúng tôi sẽ cung cấp các dịch vụ sinh thái chất lượng cao cho công chúng.</p>
+
+                <p>Chúng tôi mong muốn sự quan tâm và ủng hộ liên tục của quý vị đối với Viện Sinh thái Quốc gia, và chúng tôi sẽ cùng nhau hướng tới một tương lai bền vững.</p>
+            </div>
+            <div class="signature">Lee Chang-seok, Giám đốc Viện Sinh thái Quốc gia</div>
+        </div>
+
+        <!-- Russian Content -->
+        <div id="content-ru" class="content-section hidden">
+            <div class="message-content">
+                <p>Приветствую вас. Меня зовут Ли Чан Сок, я директор Национального института экологии.</p>
+                
+                <p>В условиях обострения глобальных экологических проблем, таких как изменение климата и утрата биоразнообразия, Национальный институт экологии играет центральную роль в сохранении и управлении разнообразием экосистем.</p>
+
+                <div class="goals-list">
+                    <h3>Основные Цели НИЭ</h3>
+                    <ol>
+                        <li>Сохранение и управление экологическим разнообразием</li>
+                        <li>Поддержка целей углеродной нейтральности</li>
+                        <li>Разработка инструментов восстановления окружающей среды</li>
+                        <li>Предоставление программ экологического образования</li>
+                        <li>Внедрение ESG-практик</li>
+                    </ol>
+                </div>
+
+                <p>Мы привержены сохранению и восстановлению экосистем на основе научных исследований и доказательств, и мы будем предоставлять высококачественные экологические услуги общественности.</p>
+
+                <p>Мы просим вашего постоянного интереса и поддержки Национального института экологии, и мы будем работать вместе к устойчивому будущему.</p>
+            </div>
+            <div class="signature">Ли Чан Сок, директор Национального института экологии</div>
+        </div>
+    </main>
+
+    <footer class="contact-info">
+        <div class="contact-content">
+            <div class="contact-item">
+                <h3 id="contact-address-title">주소</h3>
+                <p id="contact-address">충청남도 서천군 마서면 금강생태로 1210</p>
+            </div>
+            <div class="contact-item">
+                <h3 id="contact-phone-title">전화</h3>
+                <p>(041) 950-5300</p>
+            </div>
+            <div class="contact-item">
+                <h3 id="contact-director-title">원장</h3>
+                <p id="contact-director">이창석</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const translations = {
+            ko: {
+                'site-logo': '국립생태원',
+                'page-title': '국립생태원 - 원장 인사말',
+                'breadcrumb': '홈 > 기관소개 > 원장 인사말',
+                'director-name': '이창석',
+                'director-title': '국립생태원장',
+                'director-term': '재임기간: 2025.1.23 ~ 현재',
+                'contact-address-title': '주소',
+                'contact-address': '충청남도 서천군 마서면 금강생태로 1210',
+                'contact-phone-title': '전화',
+                'contact-director-title': '원장',
+                'contact-director': '이창석',
+                'current-lang': '한국어 🌐'
+            },
+            en: {
+                'site-logo': 'National Institute of Ecology',
+                'page-title': 'NIE - Director\'s Greeting',
+                'breadcrumb': 'Home > About > Director\'s Greeting',
+                'director-name': 'Lee Chang-seok',
+                'director-title': 'Director of National Institute of Ecology',
+                'director-term': 'Term: 2025.1.23 ~ Present',
+                'contact-address-title': 'Address',
+                'contact-address': '1210 Geumgang-saengthae-ro, Maseo-myeon, Seocheon-gun, Chungcheongnam-do',
+                'contact-phone-title': 'Phone',
+                'contact-director-title': 'Director',
+                'contact-director': 'Lee Chang-seok',
+                'current-lang': 'English 🌐'
+            },
+            fr: {
+                'site-logo': 'Institut National d\'Écologie',
+                'page-title': 'INE - Message du Directeur',
+                'breadcrumb': 'Accueil > À propos > Message du Directeur',
+                'director-name': 'Lee Chang-seok',
+                'director-title': 'Directeur de l\'Institut National d\'Écologie',
+                'director-term': 'Mandat: 2025.1.23 ~ Présent',
+                'contact-address-title': 'Adresse',
+                'contact-address': '1210 Geumgang-saengthae-ro, Maseo-myeon, Seocheon-gun, Chungcheongnam-do',
+                'contact-phone-title': 'Téléphone',
+                'contact-director-title': 'Directeur',
+                'contact-director': 'Lee Chang-seok',
+                'current-lang': 'Français 🌐'
+            },
+            vi: {
+                'site-logo': 'Viện Sinh thái Quốc gia',
+                'page-title': 'VST - Lời chào của Giám đốc',
+                'breadcrumb': 'Trang chủ > Giới thiệu > Lời chào của Giám đốc',
+                'director-name': 'Lee Chang-seok',
+                'director-title': 'Giám đốc Viện Sinh thái Quốc gia',
+                'director-term': 'Nhiệm kỳ: 2025.1.23 ~ Hiện tại',
+                'contact-address-title': 'Địa chỉ',
+                'contact-address': '1210 Geumgang-saengthae-ro, Maseo-myeon, Seocheon-gun, Chungcheongnam-do',
+                'contact-phone-title': 'Điện thoại',
+                'contact-director-title': 'Giám đốc',
+                'contact-director': 'Lee Chang-seok',
+                'current-lang': 'Tiếng Việt 🌐'
+            },
+            ru: {
+                'site-logo': 'Национальный институт экологии',
+                'page-title': 'НИЭ - Приветствие директора',
+                'breadcrumb': 'Главная > О нас > Приветствие директора',
+                'director-name': 'Ли Чан Сок',
+                'director-title': 'Директор Национального института экологии',
+                'director-term': 'Срок полномочий: 2025.1.23 ~ Настоящее время',
+                'contact-address-title': 'Адрес',
+                'contact-address': '1210 Geumgang-saengthae-ro, Maseo-myeon, Seocheon-gun, Chungcheongnam-do',
+                'contact-phone-title': 'Телефон',
+                'contact-director-title': 'Директор',
+                'contact-director': 'Ли Чан Сок',
+                'current-lang': 'Русский 🌐'
+            }
+        };
+
+        function toggleDropdown() {
+            document.getElementById("language-dropdown").classList.toggle("show");
+        }
+
+        function switchLanguage(lang) {
+            // Hide all content sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            
+            // Show selected language content
+            document.getElementById(`content-${lang}`).classList.remove('hidden');
+            
+            // Update dropdown option states
+            document.querySelectorAll('.lang-option').forEach(option => {
+                option.classList.remove('active');
+            });
+            document.querySelector(`[data-lang="${lang}"]`).classList.add('active');
+            
+            // Update common elements
+            const trans = translations[lang];
+            Object.keys(trans).forEach(key => {
+                const element = document.getElementById(key);
+                if (element) {
+                    if (key === 'page-title') {
+                        document.title = trans[key];
+                    } else {
+                        element.textContent = trans[key];
+                    }
+                }
+            });
+            
+            // Update HTML lang attribute
+            document.documentElement.lang = lang;
+            
+            // Close dropdown
+            document.getElementById("language-dropdown").classList.remove("show");
+        }
+
+        // Add event listeners for language options
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.lang-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    switchLanguage(this.getAttribute('data-lang'));
+                });
+            });
+
+            // Close dropdown when clicking outside
+            window.addEventListener('click', function(event) {
+                if (!event.target.matches('.lang-dropdown') && !event.target.matches('#current-lang')) {
+                    document.getElementById("language-dropdown").classList.remove("show");
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>대시보드 테스트</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .chart-container { width: 400px; height: 300px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <h1>🐦 조류 충돌 대시보드 데이터 테스트</h1>
+    
+    <div id="status"></div>
+    <div id="dataInfo"></div>
+    
+    <h2>샘플 차트</h2>
+    <div class="chart-container">
+        <canvas id="testChart"></canvas>
+    </div>
+    
+    <h2>필터 테스트</h2>
+    <select id="regionFilter">
+        <option value="all">전체 지역</option>
+    </select>
+    <button onclick="applyFilter()">필터 적용</button>
+    
+    <div id="results"></div>
+
+    <script>
+        let testData = [];
+        let testChart = null;
+
+        async function loadTestData() {
+            const statusDiv = document.getElementById('status');
+            const dataInfoDiv = document.getElementById('dataInfo');
+            
+            try {
+                statusDiv.innerHTML = '<div class="status">데이터 로딩 중...</div>';
+                
+                const response = await fetch('./bird_analysis_results.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const results = await response.json();
+                testData = results.raw_data || [];
+                
+                statusDiv.innerHTML = `<div class="status success">✅ 데이터 로드 성공: ${testData.length}개 레코드</div>`;
+                
+                // 데이터 샘플 표시
+                const sample = testData.slice(0, 3);
+                dataInfoDiv.innerHTML = `
+                    <h3>데이터 샘플:</h3>
+                    <pre>${JSON.stringify(sample, null, 2)}</pre>
+                `;
+                
+                // 필터 옵션 생성
+                populateRegionFilter();
+                
+                // 차트 생성
+                createTestChart();
+                
+            } catch (error) {
+                console.error('데이터 로드 실패:', error);
+                statusDiv.innerHTML = `<div class="status error">❌ 데이터 로드 실패: ${error.message}</div>`;
+                
+                // 시뮬레이션 데이터 생성
+                generateTestData();
+                statusDiv.innerHTML += `<div class="status">🔄 시뮬레이션 데이터 생성: ${testData.length}개 레코드</div>`;
+                
+                populateRegionFilter();
+                createTestChart();
+            }
+        }
+
+        function generateTestData() {
+            const regions = ['서울특별시', '경기도', '부산광역시', '대구광역시', '광주광역시'];
+            const species = ['멧비둘기', '직박구리', '참새', '물까치', '박새'];
+            const facilities = ['방음벽', '건물', '기타'];
+            
+            testData = [];
+            for (let i = 0; i < 100; i++) {
+                const date = new Date(2023 + Math.floor(Math.random() * 2), Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1);
+                testData.push({
+                    관찰일자: date.toISOString().split('T')[0],
+                    시도명: regions[Math.floor(Math.random() * regions.length)],
+                    한글보통명: species[Math.floor(Math.random() * species.length)],
+                    시설물유형명: facilities[Math.floor(Math.random() * facilities.length)],
+                    개체수: Math.floor(Math.random() * 5) + 1
+                });
+            }
+        }
+
+        function populateRegionFilter() {
+            const select = document.getElementById('regionFilter');
+            const regions = [...new Set(testData.map(item => item.시도명))].sort();
+            
+            select.innerHTML = '<option value="all">전체 지역</option>';
+            regions.forEach(region => {
+                const option = document.createElement('option');
+                option.value = region;
+                option.textContent = region;
+                select.appendChild(option);
+            });
+        }
+
+        function createTestChart() {
+            const ctx = document.getElementById('testChart').getContext('2d');
+            
+            // 지역별 데이터 집계
+            const regionCounts = {};
+            testData.forEach(item => {
+                regionCounts[item.시도명] = (regionCounts[item.시도명] || 0) + 1;
+            });
+            
+            const labels = Object.keys(regionCounts);
+            const data = Object.values(regionCounts);
+            
+            if (testChart) {
+                testChart.destroy();
+            }
+            
+            testChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '사고 건수',
+                        data: data,
+                        backgroundColor: '#667eea'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        function applyFilter() {
+            const selectedRegion = document.getElementById('regionFilter').value;
+            const resultsDiv = document.getElementById('results');
+            
+            let filteredData = testData;
+            if (selectedRegion !== 'all') {
+                filteredData = testData.filter(item => item.시도명 === selectedRegion);
+            }
+            
+            resultsDiv.innerHTML = `
+                <h3>필터 결과:</h3>
+                <p>선택된 지역: ${selectedRegion === 'all' ? '전체' : selectedRegion}</p>
+                <p>결과 건수: ${filteredData.length}건</p>
+                <p>전체 대비: ${((filteredData.length / testData.length) * 100).toFixed(1)}%</p>
+            `;
+            
+            console.log('필터링된 데이터:', filteredData.slice(0, 5));
+        }
+
+        // 페이지 로드 시 실행
+        document.addEventListener('DOMContentLoaded', loadTestData);
+    </script>
+</body>
+</html>

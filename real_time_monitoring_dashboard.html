@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>조류 충돌 실시간 모니터링 대시보드</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4ade80;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: auto auto auto auto;
+            gap: 2rem;
+        }
+
+        .widget {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid #e5e7eb;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .widget:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .widget-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        .widget-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .status-cards {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .status-card {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .status-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: rotate(45deg);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        .status-card.critical {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        .status-card.warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .status-card.success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .status-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .status-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .alert-panel {
+            grid-column: 1 / -1;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .alert-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+
+        .alert-item.critical {
+            background: #fef2f2;
+            border-color: #ef4444;
+        }
+
+        .alert-item.high {
+            background: #fffbeb;
+            border-color: #f59e0b;
+        }
+
+        .alert-item.medium {
+            background: #f0f9ff;
+            border-color: #3b82f6;
+        }
+
+        .alert-icon {
+            font-size: 1.5rem;
+            margin-right: 1rem;
+        }
+
+        .alert-content {
+            flex: 1;
+        }
+
+        .alert-message {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .alert-time {
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+
+        .map-container {
+            grid-column: 1 / 3;
+            height: 400px;
+        }
+
+        #monitoring-map {
+            width: 100%;
+            height: 100%;
+            border-radius: 8px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        .data-table {
+            overflow-x: auto;
+            max-height: 300px;
+        }
+
+        .data-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 0.9rem;
+        }
+
+        .data-table th {
+            background: #f9fafb;
+            font-weight: 600;
+            color: #374151;
+            position: sticky;
+            top: 0;
+        }
+
+        .refresh-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .refresh-btn:hover {
+            background: #2563eb;
+        }
+
+        .update-time {
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+
+        .species-heatmap {
+            grid-column: 3;
+            grid-row: 3 / 5;
+        }
+
+        .recommendation-panel {
+            grid-column: 1 / 3;
+        }
+
+        .recommendation-item {
+            background: #f8fafc;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .recommendation-priority {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .priority-critical {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .priority-high {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .priority-medium {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <h1>🐦 조류 충돌 실시간 모니터링 대시보드</h1>
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span>실시간 모니터링 중</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <!-- 상태 카드 -->
+        <div class="status-cards">
+            <div class="status-card">
+                <div class="status-value" id="total-accidents">0</div>
+                <div class="status-label">주간 총 사고</div>
+            </div>
+            <div class="status-card warning">
+                <div class="status-value" id="active-alerts">0</div>
+                <div class="status-label">활성 알림</div>
+            </div>
+            <div class="status-card critical">
+                <div class="status-value" id="high-risk-regions">0</div>
+                <div class="status-label">고위험 지역</div>
+            </div>
+            <div class="status-card success">
+                <div class="status-value" id="monitoring-regions">0</div>
+                <div class="status-label">모니터링 지역</div>
+            </div>
+        </div>
+
+        <!-- 알림 패널 -->
+        <div class="widget alert-panel">
+            <div class="widget-header">
+                <h3 class="widget-title">🚨 실시간 알림</h3>
+                <button class="refresh-btn" onclick="refreshAlerts()">새로고침</button>
+            </div>
+            <div id="alerts-container">
+                <!-- 알림이 여기에 동적으로 추가됩니다 -->
+            </div>
+        </div>
+
+        <!-- 실시간 지도 -->
+        <div class="widget map-container">
+            <div class="widget-header">
+                <h3 class="widget-title">📍 실시간 사고 지점</h3>
+                <span class="update-time" id="map-update-time">업데이트: 방금 전</span>
+            </div>
+            <div id="monitoring-map"></div>
+        </div>
+
+        <!-- 시간별 추이 차트 -->
+        <div class="widget">
+            <div class="widget-header">
+                <h3 class="widget-title">📊 시간별 사고 추이</h3>
+            </div>
+            <div class="chart-container">
+                <canvas id="trend-chart"></canvas>
+            </div>
+        </div>
+
+        <!-- 지역별 위험도 -->
+        <div class="widget">
+            <div class="widget-header">
+                <h3 class="widget-title">🌍 지역별 위험도</h3>
+            </div>
+            <div class="chart-container">
+                <canvas id="region-risk-chart"></canvas>
+            </div>
+        </div>
+
+        <!-- 종별 사고 현황 -->
+        <div class="widget species-heatmap">
+            <div class="widget-header">
+                <h3 class="widget-title">🦅 종별 사고 현황</h3>
+            </div>
+            <div class="data-table">
+                <table id="species-table">
+                    <thead>
+                        <tr>
+                            <th>종명</th>
+                            <th>사고수</th>
+                            <th>위험도</th>
+                        </tr>
+                    </thead>
+                    <tbody id="species-tbody">
+                        <!-- 데이터가 여기에 추가됩니다 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 권장 조치사항 -->
+        <div class="widget recommendation-panel">
+            <div class="widget-header">
+                <h3 class="widget-title">💡 권장 조치사항</h3>
+            </div>
+            <div id="recommendations-container">
+                <!-- 권장사항이 여기에 추가됩니다 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 전역 변수
+        let monitoringMap;
+        let trendChart;
+        let regionRiskChart;
+        let currentData = null;
+
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeMap();
+            initializeCharts();
+            loadMonitoringData();
+            
+            // 30초마다 데이터 업데이트
+            setInterval(loadMonitoringData, 30000);
+        });
+
+        // 지도 초기화
+        function initializeMap() {
+            monitoringMap = L.map('monitoring-map').setView([36.5, 127.8], 7);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(monitoringMap);
+        }
+
+        // 차트 초기화
+        function initializeCharts() {
+            // 시간별 추이 차트
+            const trendCtx = document.getElementById('trend-chart').getContext('2d');
+            trendChart = new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '일일 사고 건수',
+                        data: [],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // 지역별 위험도 차트
+            const regionCtx = document.getElementById('region-risk-chart').getContext('2d');
+            regionRiskChart = new Chart(regionCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: [
+                            '#ef4444', '#f59e0b', '#3b82f6', '#10b981',
+                            '#8b5cf6', '#f97316', '#06b6d4', '#84cc16'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // 모니터링 데이터 로드
+        async function loadMonitoringData() {
+            try {
+                const response = await fetch('monitoring_report.json');
+                if (!response.ok) {
+                    // 데이터가 없으면 시뮬레이션 데이터 생성
+                    generateSimulatedData();
+                    return;
+                }
+                
+                currentData = await response.json();
+                updateDashboard(currentData);
+            } catch (error) {
+                console.log('실제 데이터를 로드할 수 없어 시뮬레이션 데이터를 생성합니다.');
+                generateSimulatedData();
+            }
+        }
+
+        // 시뮬레이션 데이터 생성
+        function generateSimulatedData() {
+            const regions = ['서울', '경기', '인천', '부산', '대구', '광주', '전북', '전남'];
+            const species = ['멧비둘기', '직박구리', '참새', '물까치', '박새'];
+            const facilities = ['방음벽', '건물', '기타'];
+            
+            // 날짜 생성 (최근 7일)
+            const dates = [];
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                dates.push(date.toISOString().split('T')[0]);
+            }
+
+            // 시뮬레이션 데이터 생성
+            const dailyStats = dates.map(date => ({
+                발견일: date,
+                시도명: regions[Math.floor(Math.random() * regions.length)],
+                사고건수: Math.floor(Math.random() * 15) + 1,
+                개체수: Math.floor(Math.random() * 20) + 1
+            }));
+
+            const alerts = [];
+            dailyStats.forEach(stat => {
+                if (stat.사고건수 >= 10) {
+                    alerts.push({
+                        timestamp: new Date().toISOString(),
+                        region: stat.시도명,
+                        date: stat.발견일,
+                        risk_level: 'critical',
+                        accidents: stat.사고건수,
+                        individuals: stat.개체수,
+                        message: `🚨 긴급: ${stat.시도명}에서 ${stat.발견일}일 ${stat.사고건수}건의 조류 충돌 사고 발생`
+                    });
+                } else if (stat.사고건수 >= 5) {
+                    alerts.push({
+                        timestamp: new Date().toISOString(),
+                        region: stat.시도명,
+                        date: stat.발견일,
+                        risk_level: 'high',
+                        accidents: stat.사고건수,
+                        individuals: stat.개체수,
+                        message: `⚠️ 주의: ${stat.시도명}에서 ${stat.발견일}일 ${stat.사고건수}건의 조류 충돌 사고 발생`
+                    });
+                }
+            });
+
+            const simulatedData = {
+                report_metadata: {
+                    generated_at: new Date().toISOString(),
+                    data_period: '최근 7일',
+                    total_records: dailyStats.reduce((sum, stat) => sum + stat.사고건수, 0),
+                    monitoring_regions: regions.length
+                },
+                current_status: {
+                    total_accidents_week: dailyStats.reduce((sum, stat) => sum + stat.사고건수, 0),
+                    total_individuals: dailyStats.reduce((sum, stat) => sum + stat.개체수, 0),
+                    affected_regions: regions.length,
+                    main_facilities: { '방음벽': 150, '건물': 45, '기타': 20 }
+                },
+                active_alerts: alerts,
+                daily_statistics: dailyStats,
+                predicted_hotspots: regions.slice(0, 5).map((region, i) => ({
+                    시도명: region,
+                    시군구명: region + '시',
+                    사고건수: Math.floor(Math.random() * 50) + 20,
+                    위험도점수: Math.floor(Math.random() * 100) + 50
+                }))
+            };
+
+            updateDashboard(simulatedData);
+        }
+
+        // 대시보드 업데이트
+        function updateDashboard(data) {
+            // 상태 카드 업데이트
+            document.getElementById('total-accidents').textContent = data.current_status.total_accidents_week;
+            document.getElementById('active-alerts').textContent = data.active_alerts.length;
+            document.getElementById('high-risk-regions').textContent = data.predicted_hotspots.filter(h => h.위험도점수 > 70).length;
+            document.getElementById('monitoring-regions').textContent = data.current_status.affected_regions;
+
+            // 알림 패널 업데이트
+            updateAlerts(data.active_alerts);
+
+            // 차트 업데이트
+            updateCharts(data);
+
+            // 지도 업데이트
+            updateMap(data);
+
+            // 종별 테이블 업데이트
+            updateSpeciesTable();
+
+            // 권장사항 업데이트
+            updateRecommendations();
+
+            // 업데이트 시간 표시
+            document.getElementById('map-update-time').textContent = 
+                `업데이트: ${new Date().toLocaleTimeString()}`;
+        }
+
+        // 알림 업데이트
+        function updateAlerts(alerts) {
+            const container = document.getElementById('alerts-container');
+            container.innerHTML = '';
+
+            if (alerts.length === 0) {
+                container.innerHTML = '<p style="color: #6b7280; text-align: center; padding: 2rem;">현재 활성 알림이 없습니다.</p>';
+                return;
+            }
+
+            alerts.slice(0, 5).forEach(alert => {
+                const alertDiv = document.createElement('div');
+                alertDiv.className = `alert-item ${alert.risk_level}`;
+                
+                const icon = alert.risk_level === 'critical' ? '🚨' : 
+                           alert.risk_level === 'high' ? '⚠️' : 'ℹ️';
+                
+                alertDiv.innerHTML = `
+                    <div class="alert-icon">${icon}</div>
+                    <div class="alert-content">
+                        <div class="alert-message">${alert.message}</div>
+                        <div class="alert-time">${new Date(alert.timestamp).toLocaleString()}</div>
+                    </div>
+                `;
+                
+                container.appendChild(alertDiv);
+            });
+        }
+
+        // 차트 업데이트
+        function updateCharts(data) {
+            // 시간별 추이 차트
+            const dailyData = data.daily_statistics.slice(-7);
+            trendChart.data.labels = dailyData.map(d => new Date(d.발견일).toLocaleDateString());
+            trendChart.data.datasets[0].data = dailyData.map(d => d.사고건수);
+            trendChart.update();
+
+            // 지역별 위험도 차트
+            const hotspots = data.predicted_hotspots.slice(0, 8);
+            regionRiskChart.data.labels = hotspots.map(h => h.시도명);
+            regionRiskChart.data.datasets[0].data = hotspots.map(h => h.위험도점수);
+            regionRiskChart.update();
+        }
+
+        // 지도 업데이트
+        function updateMap(data) {
+            // 기존 마커 제거
+            monitoringMap.eachLayer(layer => {
+                if (layer instanceof L.Marker) {
+                    monitoringMap.removeLayer(layer);
+                }
+            });
+
+            // 핫스팟 지역에 마커 추가 (시뮬레이션)
+            const regionCoords = {
+                '서울': [37.5665, 126.9780],
+                '경기': [37.4138, 127.5183],
+                '인천': [37.4563, 126.7052],
+                '부산': [35.1796, 129.0756],
+                '대구': [35.8714, 128.6014],
+                '광주': [35.1595, 126.8526],
+                '전북': [35.7175, 127.1530],
+                '전남': [34.8679, 126.9910]
+            };
+
+            data.predicted_hotspots.slice(0, 8).forEach(hotspot => {
+                const coords = regionCoords[hotspot.시도명];
+                if (coords) {
+                    const riskLevel = hotspot.위험도점수 > 70 ? 'high' : 
+                                    hotspot.위험도점수 > 50 ? 'medium' : 'low';
+                    
+                    const marker = L.marker(coords).addTo(monitoringMap);
+                    marker.bindPopup(`
+                        <strong>${hotspot.시도명}</strong><br>
+                        사고건수: ${hotspot.사고건수}건<br>
+                        위험도: ${hotspot.위험도점수}점<br>
+                        상태: ${riskLevel === 'high' ? '고위험' : riskLevel === 'medium' ? '중위험' : '저위험'}
+                    `);
+                }
+            });
+        }
+
+        // 종별 테이블 업데이트
+        function updateSpeciesTable() {
+            const tbody = document.getElementById('species-tbody');
+            const species = [
+                { name: '멧비둘기', accidents: 185, risk: '높음' },
+                { name: '직박구리', accidents: 142, risk: '높음' },
+                { name: '참새', accidents: 98, risk: '중간' },
+                { name: '물까치', accidents: 76, risk: '중간' },
+                { name: '박새', accidents: 54, risk: '낮음' }
+            ];
+
+            tbody.innerHTML = species.map(s => `
+                <tr>
+                    <td>${s.name}</td>
+                    <td>${s.accidents}</td>
+                    <td><span class="priority-${s.risk === '높음' ? 'critical' : s.risk === '중간' ? 'high' : 'medium'}">${s.risk}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        // 권장사항 업데이트
+        function updateRecommendations() {
+            const container = document.getElementById('recommendations-container');
+            const recommendations = [
+                { priority: 'critical', text: '광주, 전북 지역 긴급 현장 점검 필요', deadline: '24시간 이내' },
+                { priority: 'high', text: '방음벽 지역 조류 회피 장치 보강', deadline: '1주일 이내' },
+                { priority: 'medium', text: '멧비둘기 이동 경로 추가 조사', deadline: '2주일 이내' }
+            ];
+
+            container.innerHTML = recommendations.map(rec => `
+                <div class="recommendation-item">
+                    <span class="recommendation-priority priority-${rec.priority}">${rec.priority.toUpperCase()}</span>
+                    <div>${rec.text}</div>
+                    <small style="color: #6b7280;">기한: ${rec.deadline}</small>
+                </div>
+            `).join('');
+        }
+
+        // 알림 새로고침
+        function refreshAlerts() {
+            loadMonitoringData();
+        }
+    </script>
+</body>
+</html>

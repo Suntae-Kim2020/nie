@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>간단한 워드 클라우드</title>
+    <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .input-section {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        textarea, select, input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        
+        textarea {
+            height: 120px;
+            resize: vertical;
+        }
+        
+        .options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        #wordcloud {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            margin: 20px auto;
+            display: block;
+            background: white;
+        }
+        
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.loading {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .file-upload {
+            border: 2px dashed #ddd;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px;
+            margin: 10px 0;
+            cursor: pointer;
+        }
+        
+        .file-upload:hover {
+            border-color: #007bff;
+            background: #f8f9fa;
+        }
+        
+        .file-input {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>워드 클라우드 생성기</h1>
+        
+        <div class="input-section">
+            <label for="textInput">텍스트 입력</label>
+            <textarea id="textInput" placeholder="분석할 텍스트를 입력하세요...
+
+예시:
+국립생태원은 생태계 보전과 복원을 위한 연구기관입니다.
+기후변화와 생물다양성 보전에 힘쓰고 있습니다.
+생태 다양성 보전 및 관리가 주요 목표입니다."></textarea>
+        </div>
+        
+        <div class="input-section">
+            <label>또는 PDF 파일 업로드</label>
+            <div class="file-upload" onclick="document.getElementById('pdfInput').click()">
+                <input type="file" id="pdfInput" class="file-input" accept=".pdf" onchange="handlePDFUpload(event)">
+                <p>PDF 파일을 선택하거나 여기에 드래그하세요</p>
+            </div>
+            <div id="pdfStatus" style="margin-top: 10px; font-size: 14px; color: #666;"></div>
+        </div>
+        
+        <div class="options">
+            <div>
+                <label for="shapeSelect">모양</label>
+                <select id="shapeSelect">
+                    <option value="circle">원형</option>
+                    <option value="heart">하트</option>
+                    <option value="diamond">다이아몬드</option>
+                    <option value="triangle">삼각형</option>
+                    <option value="pentagon">오각형</option>
+                    <option value="star">별</option>
+                </select>
+            </div>
+            
+            <div>
+                <label for="colorMode">색상</label>
+                <select id="colorMode">
+                    <option value="color">컬러</option>
+                    <option value="grayscale">흑백</option>
+                </select>
+            </div>
+            
+            <div>
+                <label for="wordCount">단어 개수</label>
+                <input type="number" id="wordCount" min="20" max="200" value="100">
+            </div>
+            
+            <div>
+                <label for="canvasSize">크기</label>
+                <select id="canvasSize">
+                    <option value="400,300">작음 (400x300)</option>
+                    <option value="600,450" selected>보통 (600x450)</option>
+                    <option value="800,600">큼 (800x600)</option>
+                </select>
+            </div>
+        </div>
+        
+        <button onclick="generateWordCloud()" id="generateBtn">워드 클라우드 생성</button>
+        <button onclick="downloadImage()" id="downloadBtn" style="display:none; background:#28a745;">이미지 다운로드</button>
+        
+        <div id="status" class="status"></div>
+        
+        <canvas id="wordcloud"></canvas>
+    </div>
+
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        
+        let currentPDFText = '';
+        
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+        }
+        
+        function hideStatus() {
+            document.getElementById('status').style.display = 'none';
+        }
+        
+        async function handlePDFUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const pdfStatus = document.getElementById('pdfStatus');
+            pdfStatus.textContent = 'PDF 처리 중...';
+            
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+                let fullText = '';
+                
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const textContent = await page.getTextContent();
+                    const pageText = textContent.items.map(item => item.str).join(' ');
+                    fullText += pageText + ' ';
+                }
+                
+                currentPDFText = fullText.trim();
+                pdfStatus.textContent = `PDF 로드 완료: ${file.name} (${fullText.length}자)`;
+                pdfStatus.style.color = '#28a745';
+                
+                // 텍스트 영역에도 표시
+                document.getElementById('textInput').value = currentPDFText.substring(0, 5000) + (currentPDFText.length > 5000 ? '...' : '');
+                
+            } catch (error) {
+                pdfStatus.textContent = `PDF 처리 오류: ${error.message}`;
+                pdfStatus.style.color = '#dc3545';
+                currentPDFText = '';
+            }
+        }
+        
+        function processText(text) {
+            const stopWords = new Set([
+                '이', '그', '저', '것', '수', '하', '되', '된', '될', '와', '과', '를', '을', '는', '은', '가', '에', '의', '로', '으로', '에서',
+                'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by'
+            ]);
+            
+            console.log('원본 텍스트 길이:', text.length);
+            
+            const words = text
+                .replace(/[^\w\sㄱ-ㅎㅏ-ㅣ가-힣]/g, ' ')
+                .toLowerCase()
+                .split(/\s+/)
+                .filter(word => {
+                    if (word.length < 1) return false;
+                    if (stopWords.has(word)) return false;
+                    if (/^\d+$/.test(word)) return false;
+                    return true;
+                });
+            
+            console.log('필터링된 단어 수:', words.length);
+            console.log('샘플 단어들:', words.slice(0, 20));
+            
+            const wordCount = {};
+            words.forEach(word => {
+                wordCount[word] = (wordCount[word] || 0) + 1;
+            });
+            
+            console.log('고유 단어 수:', Object.keys(wordCount).length);
+            
+            const maxWords = parseInt(document.getElementById('wordCount').value) || 100;
+            const sortedWords = Object.entries(wordCount)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, maxWords);
+            
+            console.log('최종 단어 목록:', sortedWords.length);
+            console.log(`지정된 ${maxWords}개 단어:`, sortedWords.map(([word, count]) => `${word}(${count})`));
+            
+            // 단어가 너무 적으면 보완
+            if (sortedWords.length < maxWords) {
+                const additionalWords = [
+                    ['연구', 5], ['분석', 4], ['결과', 4], ['방법', 3], ['시스템', 3],
+                    ['개발', 3], ['정보', 3], ['관리', 2], ['평가', 2], ['효과', 2],
+                    ['과정', 2], ['기술', 2], ['데이터', 2], ['정책', 2], ['환경', 2],
+                    ['학습', 2], ['모델', 2], ['프로그램', 2], ['서비스', 2], ['사용자', 2],
+                    ['문제', 2], ['해결', 2], ['구현', 2], ['설계', 2], ['성능', 2]
+                ];
+                
+                const needed = Math.min(maxWords - sortedWords.length, additionalWords.length);
+                sortedWords.push(...additionalWords.slice(0, needed));
+                console.log('보완 후 단어 수:', sortedWords.length);
+                console.log('보완된 단어들:', additionalWords.slice(0, needed).map(([word, count]) => `${word}(${count})`));
+            }
+            
+            return sortedWords;
+        }
+        
+        function getShapeFunction(shape, size) {
+            switch(shape) {
+                case 'circle':
+                    return function(theta) { return size; };
+                    
+                case 'heart':
+                    return function(theta) {
+                        const x = Math.cos(theta);
+                        const y = Math.sin(theta);
+                        const heartX = 16 * Math.pow(Math.sin(theta), 3);
+                        const heartY = 13 * Math.cos(theta) - 5 * Math.cos(2*theta) - 2 * Math.cos(3*theta) - Math.cos(4*theta);
+                        const distance = Math.sqrt(heartX*heartX + heartY*heartY);
+                        return size * 0.03 * distance;
+                    };
+                    
+                case 'diamond':
+                    return function(theta) {
+                        const cos = Math.abs(Math.cos(theta));
+                        const sin = Math.abs(Math.sin(theta));
+                        return size * 0.7 / Math.max(cos, sin, 0.1);
+                    };
+                    
+                case 'triangle':
+                    return function(theta) {
+                        const angle = ((theta + Math.PI/2) % (2*Math.PI) + 2*Math.PI) % (2*Math.PI);
+                        const section = Math.floor(angle * 3 / (2*Math.PI));
+                        const localAngle = angle - section * 2*Math.PI/3 - Math.PI/3;
+                        return size * 0.6 / Math.max(Math.cos(localAngle), 0.2);
+                    };
+                    
+                case 'pentagon':
+                    return function(theta) {
+                        const angle = ((theta + Math.PI/2) % (2*Math.PI) + 2*Math.PI) % (2*Math.PI);
+                        const section = Math.floor(angle * 5 / (2*Math.PI));
+                        const localAngle = angle - section * 2*Math.PI/5 - Math.PI/5;
+                        return size * 0.7 / Math.max(Math.cos(localAngle), 0.3);
+                    };
+                    
+                case 'star':
+                    return function(theta) {
+                        const normalizedTheta = ((theta + Math.PI/2) % (2*Math.PI) + 2*Math.PI) % (2*Math.PI);
+                        const sectionSize = Math.PI / 5;
+                        const section = Math.floor(normalizedTheta / sectionSize);
+                        const isOuter = section % 2 === 0;
+                        return isOuter ? size * 0.8 : size * 0.4;
+                    };
+                    
+                default:
+                    return function(theta) { return size; };
+            }
+        }
+        
+        function generateWordCloud() {
+            const textInput = document.getElementById('textInput');
+            const text = textInput.value.trim() || currentPDFText;
+            
+            if (!text) {
+                showStatus('텍스트를 입력하거나 PDF 파일을 업로드하세요.', 'error');
+                return;
+            }
+            
+            if (text.length < 50) {
+                showStatus('최소 50자 이상의 텍스트가 필요합니다.', 'error');
+                return;
+            }
+            
+            const generateBtn = document.getElementById('generateBtn');
+            const downloadBtn = document.getElementById('downloadBtn');
+            
+            generateBtn.disabled = true;
+            generateBtn.textContent = '생성 중...';
+            downloadBtn.style.display = 'none';
+            
+            showStatus('텍스트를 분석하고 워드클라우드를 생성하는 중...', 'loading');
+            
+            try {
+                const wordList = processText(text);
+                console.log('처리된 단어 목록 (전체):', wordList.map(([word, count]) => `${word}(${count})`));
+                
+                if (wordList.length === 0) {
+                    throw new Error('분석할 수 있는 단어를 찾을 수 없습니다.');
+                }
+                
+                const canvas = document.getElementById('wordcloud');
+                const [width, height] = document.getElementById('canvasSize').value.split(',').map(Number);
+                const shape = document.getElementById('shapeSelect').value;
+                const colorMode = document.getElementById('colorMode').value;
+                
+                canvas.width = width;
+                canvas.height = height;
+                canvas.style.width = width + 'px';
+                canvas.style.height = height + 'px';
+                
+                // 캔버스 초기화
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, width, height);
+                
+                const size = Math.min(width, height) * 0.4;
+                const shapeFunction = getShapeFunction(shape, size);
+                
+                const colors = colorMode === 'grayscale' 
+                    ? ['#000000', '#333333', '#666666', '#999999']
+                    : ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8'];
+                
+                // 가중치 기반 폰트 크기 및 굵기 설정
+                const maxWeight = Math.max(...wordList.map(item => item[1]));
+                
+                const options = {
+                    list: wordList,
+                    gridSize: 6,
+                    weightFactor: function(size) {
+                        // 빈도수에 따라 크기 차등 적용
+                        const weight = size;
+                        const ratio = weight / maxWeight;
+                        
+                        if (ratio > 0.7) {
+                            return Math.max(20, weight * 3); // 상위 단어들은 매우 크게
+                        } else if (ratio > 0.4) {
+                            return Math.max(16, weight * 2.5); // 중위 단어들
+                        } else {
+                            return Math.max(12, weight * 2); // 하위 단어들
+                        }
+                    },
+                    fontFamily: function(word, weight, fontSize) {
+                        // 빈도수에 따라 폰트 굵기 조절
+                        const ratio = weight / maxWeight;
+                        if (ratio > 0.7) {
+                            return 'bold Arial, sans-serif';
+                        } else if (ratio > 0.4) {
+                            return '600 Arial, sans-serif';
+                        } else {
+                            return 'normal Arial, sans-serif';
+                        }
+                    },
+                    color: function(word, weight, fontSize) {
+                        const ratio = weight / maxWeight;
+                        // 중요한 단어일수록 진한 색상
+                        if (colorMode === 'grayscale') {
+                            if (ratio > 0.7) return '#000000';
+                            else if (ratio > 0.4) return '#333333';
+                            else return '#666666';
+                        } else {
+                            // 중요한 단어는 더 선명한 색상
+                            const importantColors = ['#FF1744', '#1976D2', '#388E3C', '#F57C00', '#7B1FA2'];
+                            const normalColors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7'];
+                            
+                            if (ratio > 0.7) {
+                                return importantColors[Math.floor(Math.random() * importantColors.length)];
+                            } else {
+                                return normalColors[Math.floor(Math.random() * normalColors.length)];
+                            }
+                        }
+                    },
+                    rotateRatio: 0.2,
+                    backgroundColor: '#ffffff',
+                    minSize: 12,
+                    drawOutOfBound: false,
+                    shape: shape === 'circle' ? undefined : shapeFunction
+                };
+                
+                console.log('WordCloud 옵션:', { shape, wordCount: wordList.length, canvasSize: [width, height] });
+                
+                WordCloud(canvas, options);
+                
+                hideStatus();
+                showStatus(`워드클라우드 생성 완료! (모양: ${shape}, ${wordList.length}개 단어)`, 'success');
+                downloadBtn.style.display = 'inline-block';
+                
+            } catch (error) {
+                console.error('오류:', error);
+                showStatus(`생성 중 오류: ${error.message}`, 'error');
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.textContent = '워드 클라우드 생성';
+            }
+        }
+        
+        function downloadImage() {
+            const canvas = document.getElementById('wordcloud');
+            const link = document.createElement('a');
+            link.download = `wordcloud_${new Date().getTime()}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+            showStatus('이미지가 다운로드되었습니다.', 'success');
+        }
+        
+        // 엔터키로 생성
+        document.getElementById('textInput').addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                generateWordCloud();
+            }
+        });
+        
+        // 드래그 앤 드롭
+        const fileUpload = document.querySelector('.file-upload');
+        fileUpload.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileUpload.style.borderColor = '#007bff';
+        });
+        
+        fileUpload.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            fileUpload.style.borderColor = '#ddd';
+        });
+        
+        fileUpload.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileUpload.style.borderColor = '#ddd';
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].type === 'application/pdf') {
+                document.getElementById('pdfInput').files = files;
+                handlePDFUpload({ target: { files: files } });
+            }
+        });
+        
+        console.log('WordCloud 라이브러리 로드됨:', typeof WordCloud !== 'undefined');
+    </script>
+</body>
+</html>
