@@ -457,4 +457,8 @@ if __name__ == '__main__':
     print(f"한글 폰트 경로: {KOREAN_FONT_PATH}")
     print(f"폰트 파일 존재: {os.path.exists(KOREAN_FONT_PATH)}")
     
-    app.run(debug=True, host='0.0.0.0', port=5001)
+    # Cloud Run에서는 PORT 환경 변수를 사용
+    port = int(os.environ.get('PORT', 5001))
+    print(f"서버 포트: {port}")
+    
+    app.run(debug=False, host='0.0.0.0', port=port)
