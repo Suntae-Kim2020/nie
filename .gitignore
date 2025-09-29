@@ -116,4 +116,4 @@ F006_20250118_30.*
 
 # Google Cloud
 .gcloudignore
-service-account-key.json
+service-account-key.json.npm-cache/
