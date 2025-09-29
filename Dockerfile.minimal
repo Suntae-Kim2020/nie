@@ -21,6 +21,12 @@ COPY flask_wordcloud.py .
 # Copy templates directory 
 COPY templates/ ./templates/
 
+# Copy all HTML files
+COPY *.html ./
+
+# Copy data files
+COPY *.json ./
+
 # Create necessary directories
 RUN mkdir -p /app/static
 

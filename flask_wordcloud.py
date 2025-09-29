@@ -369,13 +369,60 @@ def create_wordcloud(word_freq, shape='circle', color_mode='color', width=600, h
 
 @app.route('/')
 def index():
-    """메인 페이지"""
-    return render_template('wordcloud.html')
+    """메인 포털 페이지"""
+    with open('index.html', 'r', encoding='utf-8') as f:
+        return f.read()
 
 @app.route('/wordcloud')
 def wordcloud_page():
     """워드클라우드 페이지"""
     return render_template('wordcloud.html')
+
+# 조류 충돌 분석 페이지들
+@app.route('/bird-analysis')
+def bird_analysis():
+    """조류 충돌 분석 메인"""
+    with open('bird_collision_analysis.html', 'r', encoding='utf-8') as f:
+        return f.read()
+
+@app.route('/bird-dashboard')  
+def bird_dashboard():
+    """조류 충돌 대시보드"""
+    with open('bird_collision_dashboard.html', 'r', encoding='utf-8') as f:
+        return f.read()
+
+@app.route('/bird-detailed-analysis')
+def bird_detailed_analysis():
+    """조류 충돌 상세 분석"""
+    with open('bird_collision_detailed_analysis.html', 'r', encoding='utf-8') as f:
+        return f.read()
+
+@app.route('/bird-map')
+def bird_map():
+    """조류 충돌 지도"""
+    with open('bird_collision_map.html', 'r', encoding='utf-8') as f:
+        return f.read()
+
+# NIE 다국어 서비스
+@app.route('/nie-multilingual')
+def nie_multilingual():
+    """NIE 다국어 서비스"""
+    with open('nie_multilingual.html', 'r', encoding='utf-8') as f:
+        return f.read()
+
+# 기타 페이지들
+@app.route('/policy-recommendations')
+def policy_recommendations():
+    """정책 제안"""
+    with open('policy_recommendations.html', 'r', encoding='utf-8') as f:
+        return f.read()
+
+@app.route('/monitoring-dashboard')
+def monitoring_dashboard():
+    """실시간 모니터링 대시보드"""
+    with open('real_time_monitoring_dashboard.html', 'r', encoding='utf-8') as f:
+        return f.read()
+
 
 @app.route('/favicon.ico')
 def favicon():
