@@ -38,6 +38,7 @@ COPY wordcloud-simple.html ./
 
 # Copy data files
 COPY *.json ./
+COPY bird_collision_data.geojson ./
 
 # Create necessary directories
 RUN mkdir -p /app/static

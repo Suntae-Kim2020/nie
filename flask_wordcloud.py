@@ -462,6 +462,62 @@ def health():
     """Health check for Docker"""
     return jsonify({'status': 'healthy', 'service': 'wordcloud'}), 200
 
+# 데이터 파일 서빙 라우트
+@app.route('/bird_collision_data.geojson')
+def serve_geojson():
+    """조류 충돌 GeoJSON 데이터 서빙"""
+    try:
+        base_dir = '/app' if os.path.exists('/app') else os.getcwd()
+        file_path = os.path.join(base_dir, 'bird_collision_data.geojson')
+        
+        if not os.path.exists(file_path):
+            return jsonify({'error': 'GeoJSON 파일을 찾을 수 없습니다'}), 404
+            
+        return send_file(file_path, mimetype='application/json')
+    except Exception as e:
+        print(f"GeoJSON 서빙 오류: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/bird_statistics.json')
+def serve_statistics():
+    """조류 통계 JSON 데이터 서빙"""
+    try:
+        base_dir = '/app' if os.path.exists('/app') else os.getcwd()
+        file_path = os.path.join(base_dir, 'bird_statistics.json')
+        
+        if not os.path.exists(file_path):
+            return jsonify({'error': '통계 파일을 찾을 수 없습니다'}), 404
+            
+        return send_file(file_path, mimetype='application/json')
+    except Exception as e:
+        print(f"통계 파일 서빙 오류: {e}")
+        return jsonify({'error': str(e)}), 500
+
+# 기타 JSON 데이터 파일들 서빙
+@app.route('/<filename>.json')
+def serve_json_data(filename):
+    """JSON 데이터 파일들을 동적으로 서빙"""
+    try:
+        base_dir = '/app' if os.path.exists('/app') else os.getcwd()
+        file_path = os.path.join(base_dir, f'{filename}.json')
+        
+        # 보안을 위해 허용된 파일만 서빙
+        allowed_files = [
+            'bird_analysis_results', 'advanced_analysis_data', 
+            'comprehensive_policy_document', 'bird_statistics'
+        ]
+        
+        if filename not in allowed_files:
+            return jsonify({'error': '허용되지 않은 파일입니다'}), 403
+            
+        if not os.path.exists(file_path):
+            return jsonify({'error': f'{filename}.json 파일을 찾을 수 없습니다'}), 404
+            
+        return send_file(file_path, mimetype='application/json')
+    except Exception as e:
+        print(f"JSON 파일 서빙 오류: {e}")
+        return jsonify({'error': str(e)}), 500
+
 @app.errorhandler(404)
 def not_found(error):
     """404 에러 처리"""

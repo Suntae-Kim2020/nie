@@ -97,9 +97,12 @@ tmp/
 # Application specific
 user_stopwords.json
 *.csv
-*.geojson
 *.gpkg
 *.xlsx
+
+# Allow essential data files for web service
+!bird_collision_data.geojson
+!bird_statistics.json
 
 # Large data files (>100MB limit for GitHub)
 *.dbf
