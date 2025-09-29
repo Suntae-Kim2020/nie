@@ -350,7 +350,8 @@
             const fileStatus = document.getElementById('fileStatus');
             
             if (file) {
-                if (file.type !== 'application/pdf' && file.type !== 'text/plain') {
+                if (file.type !== 'application/pdf' && file.type !== 'text/plain' && 
+                    !file.name.toLowerCase().endsWith('.pdf') && !file.name.toLowerCase().endsWith('.txt')) {
                     fileStatus.innerHTML = '<span style="color: red;">❌ PDF 또는 텍스트 파일만 업로드 가능합니다.</span>';
                     return;
                 }

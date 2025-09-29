@@ -184,9 +184,55 @@ def generate_wordcloud():
                     print(f"📁 File found: {file.filename if file else 'None'}")
                     if file and file.filename:
                         try:
-                            file_content = file.read().decode('utf-8')
+                            file_content = None
+                            
+                            # PDF 파일 처리
+                            if file.filename.lower().endswith('.pdf'):
+                                try:
+                                    import PyPDF2
+                                    pdf_reader = PyPDF2.PdfReader(file)
+                                    pdf_text = ""
+                                    for page in pdf_reader.pages:
+                                        pdf_text += page.extract_text() + "\n"
+                                    file_content = pdf_text
+                                    print(f"📁 PDF processed: {file.filename}, pages: {len(pdf_reader.pages)}")
+                                except ImportError:
+                                    # PyPDF2가 없으면 에러 메시지 반환
+                                    return jsonify({
+                                        "error": "PDF processing not available",
+                                        "message": "PDF 처리 라이브러리가 설치되지 않았습니다. 텍스트 파일을 사용해주세요.",
+                                        "status": "error"
+                                    }), 400
+                                except Exception as pdf_error:
+                                    return jsonify({
+                                        "error": "PDF processing failed",
+                                        "message": f"PDF 파일 처리 중 오류: {str(pdf_error)}",
+                                        "status": "error"
+                                    }), 400
+                            else:
+                                # 텍스트 파일 처리 (여러 인코딩 시도)
+                                file_bytes = file.read()
+                                
+                                # UTF-8 먼저 시도
+                                try:
+                                    file_content = file_bytes.decode('utf-8')
+                                except UnicodeDecodeError:
+                                    # UTF-8이 실패하면 다른 인코딩들 시도
+                                    encodings = ['cp949', 'euc-kr', 'latin1', 'utf-16']
+                                    for encoding in encodings:
+                                        try:
+                                            file_content = file_bytes.decode(encoding)
+                                            print(f"📁 File decoded with {encoding} encoding")
+                                            break
+                                        except UnicodeDecodeError:
+                                            continue
+                            
+                            if file_content is None:
+                                raise Exception("파일 인코딩을 인식할 수 없습니다")
+                            
                             text = file_content if not text else text + '\n' + file_content
                             print(f"📁 File uploaded: {file.filename}, size: {len(file_content)} chars")
+                            
                         except Exception as file_error:
                             print(f"❌ File reading error: {str(file_error)}")
                             return jsonify({
