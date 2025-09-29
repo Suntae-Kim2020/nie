@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask 워드 클라우드</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        textarea, select, input[type="number"], input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e1e1;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+            line-height: 1.5;
+        }
+
+        textarea:focus, select:focus, input:focus {
+            outline: none;
+            border-color: #4facfe;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .file-upload {
+            border: 2px dashed #e1e1e1;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            background: #f8f9fa;
+        }
+
+        .file-upload:hover {
+            border-color: #4facfe;
+            background: #e3f2fd;
+        }
+
+        .file-upload.dragover {
+            border-color: #4facfe;
+            background: #e3f2fd;
+            transform: scale(1.02);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 10px 5px 10px 0;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-download {
+            background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
+            display: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .result-container {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .wordcloud-image {
+            max-width: 100%;
+            border: 2px solid #e1e1e1;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin: 20px 0;
+        }
+
+        .char-counter {
+            text-align: right;
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .server-info {
+            background: #e8f4f8;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #17a2b8;
+        }
+
+        .server-info h3 {
+            color: #17a2b8;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Flask 워드 클라우드</h1>
+            <p>Python 기반 고성능 워드클라우드 생성기</p>
+        </div>
+        
+        <div class="content">
+            <div class="server-info">
+                <h3>🚀 Flask 기반 워드클라우드의 장점</h3>
+                <ul style="margin-left: 20px; color: #555;">
+                    <li>Python wordcloud 라이브러리 사용으로 더 정확한 한글 처리</li>
+                    <li>서버사이드 렌더링으로 안정적인 모양 생성</li>
+                    <li>대용량 텍스트 및 PDF 파일 처리 가능 (최대 35MB)</li>
+                    <li>고품질 이미지 출력 (PNG, 고해상도)</li>
+                    <li><strong>확장된 불용어 사전</strong>: 한국어/영어 기본 불용어 자동 제거</li>
+                    <li><strong>사용자 정의 불용어</strong>: 원하는 단어 추가 제외 가능</li>
+                </ul>
+            </div>
+
+            <form id="wordcloudForm" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="textInput">텍스트 입력</label>
+                    <textarea id="textInput" name="text" 
+                             placeholder="분석할 텍스트를 입력하세요...
+
+예시:
+국립생태원은 생태계 보전과 복원을 위한 연구기관입니다.
+기후변화와 생물다양성 보전에 힘쓰고 있습니다.
+생태 다양성 보전 및 관리가 주요 목표입니다.
+환경보전의 기반이 되는 연구를 수행합니다."></textarea>
+                    <div class="char-counter">
+                        <span id="charCount">0</span>자
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>또는 PDF 파일 업로드</label>
+                    <div class="file-upload" onclick="document.getElementById('pdfFile').click()">
+                        <input type="file" id="pdfFile" name="pdf_file" accept=".pdf" style="display: none;" onchange="handleFileUpload(event)">
+                        <p>📄 PDF 파일을 선택하거나 여기에 드래그하세요</p>
+                        <small>최대 35MB</small>
+                    </div>
+                    <div id="fileStatus" style="margin-top: 10px; font-size: 14px;"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="customStopwords">사용자 정의 불용어 (선택사항)</label>
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <button type="button" class="btn" style="padding: 8px 16px; font-size: 14px; background: #28a745;" onclick="loadSavedStopwords()">
+                            📥 저장된 불용어 불러오기
+                        </button>
+                        <button type="button" class="btn" style="padding: 8px 16px; font-size: 14px; background: #dc3545;" onclick="clearSavedStopwords()">
+                            🗑️ 저장된 불용어 삭제
+                        </button>
+                        <span id="savedStopwordsCount" style="padding: 8px; color: #666; font-size: 14px;"></span>
+                    </div>
+                    <textarea id="customStopwords" name="custom_stopwords" 
+                             placeholder="제외하고 싶은 단어를 쉼표로 구분해서 입력하세요.&#10;&#10;예시: 기술, 방법, 시스템, 개발, 연구, 분석&#10;&#10;• 기본 불용어 사전에 포함된 일반적인 조사, 접속사, 대명사 등은 자동으로 제외됩니다&#10;• 여기에 입력한 단어들이 추가로 제외되고 자동으로 저장됩니다"
+                             rows="4"></textarea>
+                    <small style="color: #666; font-size: 12px;">
+                        💡 여기에 입력한 불용어는 자동으로 저장되어 다음에도 사용됩니다. 기본적으로 조사(이, 가, 을, 를), 접속사(그리고, 하지만), 대명사(그, 저, 이) 등은 자동 제외됩니다.
+                    </small>
+                </div>
+
+                <div class="options-grid">
+                    <div class="form-group">
+                        <label for="shapeSelect">모양</label>
+                        <select id="shapeSelect" name="shape">
+                            <option value="circle">원형</option>
+                            <option value="heart">하트</option>
+                            <option value="diamond">다이아몬드</option>
+                            <option value="triangle">삼각형</option>
+                            <option value="pentagon">오각형</option>
+                            <option value="star">별</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="colorMode">색상 모드</label>
+                        <select id="colorMode" name="color_mode">
+                            <option value="color">컬러</option>
+                            <option value="grayscale">흑백</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="wordCount">단어 개수</label>
+                        <input type="number" id="wordCount" name="word_count" min="20" max="300" value="150">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="canvasSize">크기</label>
+                        <select id="canvasSize" name="canvas_size">
+                            <option value="600,450">보통 (600x450)</option>
+                            <option value="800,600" selected>큼 (800x600)</option>
+                            <option value="1200,900">매우 큼 (1200x900)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn" id="generateBtn">
+                    🎨 워드 클라우드 생성
+                </button>
+                
+                <button type="button" class="btn btn-download" id="downloadBtn" onclick="downloadImage()">
+                    💾 이미지 다운로드
+                </button>
+            </form>
+
+            <div class="loading" id="loading">
+                <div class="loading-spinner"></div>
+                <p>서버에서 워드클라우드를 생성하는 중...</p>
+            </div>
+
+            <div class="status" id="status"></div>
+
+            <div class="result-container" id="resultContainer" style="display: none;">
+                <img id="wordcloudImage" class="wordcloud-image" alt="생성된 워드클라우드">
+                <div id="resultInfo" style="margin-top: 15px; color: #666;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentImageData = null;
+
+        // 글자 수 카운터
+        document.getElementById('textInput').addEventListener('input', function() {
+            const count = this.value.length;
+            document.getElementById('charCount').textContent = count.toLocaleString();
+        });
+
+        // 파일 업로드 처리
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            const fileStatus = document.getElementById('fileStatus');
+            
+            if (file) {
+                if (file.type !== 'application/pdf') {
+                    fileStatus.innerHTML = '<span style="color: red;">❌ PDF 파일만 업로드 가능합니다.</span>';
+                    return;
+                }
+                
+                if (file.size > 35 * 1024 * 1024) {
+                    fileStatus.innerHTML = '<span style="color: red;">❌ 파일 크기가 35MB를 초과합니다.</span>';
+                    return;
+                }
+                
+                fileStatus.innerHTML = `<span style="color: green;">✅ ${file.name} (${(file.size/1024/1024).toFixed(1)}MB)</span>`;
+            }
+        }
+
+        // 드래그 앤 드롭
+        const fileUpload = document.querySelector('.file-upload');
+        
+        fileUpload.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileUpload.classList.add('dragover');
+        });
+        
+        fileUpload.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            fileUpload.classList.remove('dragover');
+        });
+        
+        fileUpload.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileUpload.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                document.getElementById('pdfFile').files = files;
+                handleFileUpload({ target: { files: files } });
+            }
+        });
+
+        // 상태 표시
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+        }
+
+        function hideStatus() {
+            document.getElementById('status').style.display = 'none';
+        }
+
+        // 폼 제출
+        document.getElementById('wordcloudForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const textInput = document.getElementById('textInput').value.trim();
+            const pdfFile = document.getElementById('pdfFile').files[0];
+            
+            if (!textInput && !pdfFile) {
+                showStatus('텍스트를 입력하거나 PDF 파일을 업로드하세요.', 'error');
+                return;
+            }
+
+            const generateBtn = document.getElementById('generateBtn');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const loading = document.getElementById('loading');
+            const resultContainer = document.getElementById('resultContainer');
+            
+            // UI 상태 변경
+            generateBtn.disabled = true;
+            generateBtn.textContent = '생성 중...';
+            downloadBtn.style.display = 'none';
+            loading.style.display = 'block';
+            resultContainer.style.display = 'none';
+            hideStatus();
+            
+            try {
+                const formData = new FormData(this);
+                
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // 성공적으로 생성됨
+                    const img = document.getElementById('wordcloudImage');
+                    img.src = `data:image/png;base64,${result.image}`;
+                    currentImageData = result.image;
+                    
+                    document.getElementById('resultInfo').innerHTML = `
+                        <strong>${result.message}</strong><br>
+                        모양: ${result.shape} | 단어 수: ${result.word_count}개
+                    `;
+                    
+                    resultContainer.style.display = 'block';
+                    downloadBtn.style.display = 'inline-block';
+                    showStatus(result.message, 'success');
+                    
+                } else {
+                    throw new Error(result.error || '알 수 없는 오류가 발생했습니다.');
+                }
+                
+            } catch (error) {
+                console.error('오류:', error);
+                showStatus(`생성 실패: ${error.message}`, 'error');
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.textContent = '🎨 워드 클라우드 생성';
+                loading.style.display = 'none';
+            }
+        });
+
+        // 이미지 다운로드
+        function downloadImage() {
+            if (!currentImageData) {
+                showStatus('다운로드할 이미지가 없습니다.', 'error');
+                return;
+            }
+            
+            const link = document.createElement('a');
+            link.href = `data:image/png;base64,${currentImageData}`;
+            link.download = `wordcloud_${new Date().getTime()}.png`;
+            link.click();
+            
+            showStatus('이미지가 다운로드되었습니다.', 'success');
+        }
+
+        // 초기 글자 수 설정
+        document.getElementById('textInput').dispatchEvent(new Event('input'));
+        
+        // 페이지 로드시 저장된 불용어 수 표시
+        updateSavedStopwordsCount();
+
+        // 저장된 불용어 개수 업데이트
+        async function updateSavedStopwordsCount() {
+            try {
+                const response = await fetch('/get_saved_stopwords');
+                const result = await response.json();
+                
+                if (result.success) {
+                    const countElement = document.getElementById('savedStopwordsCount');
+                    if (result.count > 0) {
+                        countElement.textContent = `💾 저장된 불용어: ${result.count}개`;
+                        countElement.style.color = '#28a745';
+                    } else {
+                        countElement.textContent = '저장된 불용어 없음';
+                        countElement.style.color = '#666';
+                    }
+                }
+            } catch (error) {
+                console.error('저장된 불용어 수 조회 오류:', error);
+            }
+        }
+
+        // 저장된 불용어 불러오기
+        async function loadSavedStopwords() {
+            try {
+                const response = await fetch('/get_saved_stopwords');
+                const result = await response.json();
+                
+                if (result.success) {
+                    const customStopwordsTextarea = document.getElementById('customStopwords');
+                    
+                    if (result.stopwords) {
+                        // 기존 내용과 병합
+                        const currentValue = customStopwordsTextarea.value.trim();
+                        const newValue = currentValue ? `${currentValue}, ${result.stopwords}` : result.stopwords;
+                        
+                        customStopwordsTextarea.value = newValue;
+                        showStatus(`저장된 불용어 ${result.count}개를 불러왔습니다.`, 'success');
+                    } else {
+                        showStatus('저장된 불용어가 없습니다.', 'error');
+                    }
+                } else {
+                    showStatus(`불용어 불러오기 실패: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                console.error('저장된 불용어 불러오기 오류:', error);
+                showStatus('저장된 불용어 불러오기 중 오류가 발생했습니다.', 'error');
+            }
+        }
+
+        // 저장된 불용어 삭제
+        async function clearSavedStopwords() {
+            if (!confirm('저장된 모든 불용어를 삭제하시겠습니까?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/clear_saved_stopwords', {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showStatus(result.message, 'success');
+                    updateSavedStopwordsCount();
+                } else {
+                    showStatus(`불용어 삭제 실패: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                console.error('저장된 불용어 삭제 오류:', error);
+                showStatus('저장된 불용어 삭제 중 오류가 발생했습니다.', 'error');
+            }
+        }
+    </script>
+</body>
+</html>
