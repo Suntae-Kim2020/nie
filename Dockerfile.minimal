@@ -21,8 +21,20 @@ COPY flask_wordcloud.py .
 # Copy templates directory 
 COPY templates/ ./templates/
 
-# Copy all HTML files
-COPY *.html ./
+# Copy all HTML files explicitly
+COPY index.html ./
+COPY bird_collision_analysis.html ./
+COPY bird_collision_dashboard.html ./
+COPY bird_collision_detailed_analysis.html ./
+COPY bird_collision_map.html ./
+COPY nie_multilingual.html ./
+COPY policy_recommendations.html ./
+COPY real_time_monitoring_dashboard.html ./
+COPY simple_dashboard.html ./
+COPY table_test.html ./
+COPY test_dashboard.html ./
+COPY wordcloud-app.html ./
+COPY wordcloud-simple.html ./
 
 # Copy data files
 COPY *.json ./
