@@ -105,7 +105,7 @@ jobs:
         # Deploy Flask App
         gcloud run deploy nie-flask-app \
           --image=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/flask-app:latest \
-          --region=$GAR_LOCATION \
+          --region=$GCP_REGION \
           --platform=managed \
           --allow-unauthenticated \
           --port=5000 \
@@ -115,17 +115,27 @@ jobs:
         # Deploy MCP HTTP Server
         gcloud run deploy nie-mcp-http \
           --image=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/mcp-http:latest \
-          --region=$GAR_LOCATION \
+          --region=$GCP_REGION \
           --platform=managed \
           --allow-unauthenticated \
           --port=8080 \
           --memory=512Mi \
           --cpu=1
         
+        # Deploy MCP SQLite Server
+        gcloud run deploy nie-mcp-sqlite \
+          --image=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/mcp-sqlite:latest \
+          --region=$GCP_REGION \
+          --platform=managed \
+          --no-allow-unauthenticated \
+          --port=3000 \
+          --memory=512Mi \
+          --cpu=1
+        
         # Deploy Monitoring Service
         gcloud run deploy nie-monitoring \
           --image=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/monitoring:latest \
-          --region=$GAR_LOCATION \
+          --region=$GCP_REGION \
           --platform=managed \
           --allow-unauthenticated \
           --port=9090 \
@@ -136,6 +146,7 @@ jobs:
       if: github.ref == 'refs/heads/main'
       run: |
         echo "🚀 Deployment completed!"
-        echo "Flask App: $(gcloud run services describe nie-flask-app --region=$GAR_LOCATION --format='value(status.url)')"
-        echo "MCP HTTP: $(gcloud run services describe nie-mcp-http --region=$GAR_LOCATION --format='value(status.url)')"
-        echo "Monitoring: $(gcloud run services describe nie-monitoring --region=$GAR_LOCATION --format='value(status.url)')"
+        echo "Flask App: $(gcloud run services describe nie-flask-app --region=$GCP_REGION --format='value(status.url)')"
+        echo "MCP HTTP: $(gcloud run services describe nie-mcp-http --region=$GCP_REGION --format='value(status.url)')"
+        echo "MCP SQLite: $(gcloud run services describe nie-mcp-sqlite --region=$GCP_REGION --format='value(status.url)')"
+        echo "Monitoring: $(gcloud run services describe nie-monitoring --region=$GCP_REGION --format='value(status.url)')"
