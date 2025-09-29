@@ -142,55 +142,110 @@ def generate_wordcloud():
                 "status": "error"
             }), 413
         
+        # 디버깅: 요청 정보 로깅
+        print(f"🔍 Request debugging:")
+        print(f"   Content-Type: {request.content_type}")
+        print(f"   Method: {request.method}")
+        print(f"   Is JSON: {request.is_json}")
+        print(f"   Form keys: {list(request.form.keys()) if request.form else []}")
+        print(f"   Files keys: {list(request.files.keys()) if request.files else []}")
+        print(f"   Args keys: {list(request.args.keys()) if request.args else []}")
+        
         # 다양한 Content-Type 지원
         text = ''
         
-        # JSON 요청 처리
-        if request.is_json:
-            data = request.get_json()
-            if data:
-                text = data.get('text', '')
-        
-        # Form data 요청 처리 (파일 업로드 등)
-        elif request.content_type and 'multipart/form-data' in request.content_type:
-            text = request.form.get('text', '')
-            # 파일이 업로드된 경우
-            if 'file' in request.files:
-                file = request.files['file']
-                if file and file.filename:
-                    try:
-                        file_content = file.read().decode('utf-8')
-                        text = file_content if not text else text + '\n' + file_content
-                        print(f"📁 File uploaded: {file.filename}, size: {len(file_content)} chars")
-                    except Exception as file_error:
-                        print(f"❌ File reading error: {str(file_error)}")
-                        return jsonify({
-                            "error": "File reading failed",
-                            "message": f"파일을 읽을 수 없습니다: {str(file_error)}",
-                            "status": "error"
-                        }), 400
-        
-        # application/x-www-form-urlencoded 처리
-        elif request.content_type and 'application/x-www-form-urlencoded' in request.content_type:
-            text = request.form.get('text', '')
-        
-        # Raw text 처리
-        elif request.content_type and 'text/plain' in request.content_type:
-            text = request.get_data(as_text=True)
-        
-        # 기본값 처리
-        else:
-            # 마지막 시도: form에서 텍스트 가져오기
-            text = request.form.get('text', '') if request.form else ''
+        try:
+            # JSON 요청 처리
+            if request.is_json:
+                data = request.get_json()
+                print(f"📋 JSON data received: {data}")
+                if data:
+                    text = data.get('text', '')
+                    print(f"📄 Text from JSON: {len(text)} characters")
             
-            if not text:
-                print(f"⚠️ Unsupported Content-Type: {request.content_type}")
-                return jsonify({
-                    "error": "Unsupported Content-Type",
-                    "message": f"지원하지 않는 Content-Type입니다: {request.content_type}",
-                    "supported_types": ["application/json", "multipart/form-data", "application/x-www-form-urlencoded", "text/plain"],
-                    "status": "error"
-                }), 415
+            # Form data 요청 처리 (파일 업로드 등)
+            elif request.content_type and 'multipart/form-data' in request.content_type:
+                print(f"📤 Processing multipart/form-data")
+                text = request.form.get('text', '')
+                print(f"📝 Text from form: '{text[:100]}...' ({len(text)} chars)")
+                
+                # 파일이 업로드된 경우
+                if 'file' in request.files:
+                    file = request.files['file']
+                    print(f"📁 File found: {file.filename if file else 'None'}")
+                    if file and file.filename:
+                        try:
+                            file_content = file.read().decode('utf-8')
+                            text = file_content if not text else text + '\n' + file_content
+                            print(f"📁 File uploaded: {file.filename}, size: {len(file_content)} chars")
+                        except Exception as file_error:
+                            print(f"❌ File reading error: {str(file_error)}")
+                            return jsonify({
+                                "error": "File reading failed",
+                                "message": f"파일을 읽을 수 없습니다: {str(file_error)}",
+                                "status": "error"
+                            }), 400
+                
+                # textarea 필드도 확인
+                if not text and 'textarea' in request.form:
+                    text = request.form.get('textarea', '')
+                    print(f"📝 Text from textarea: {len(text)} characters")
+            
+            # application/x-www-form-urlencoded 처리
+            elif request.content_type and 'application/x-www-form-urlencoded' in request.content_type:
+                print(f"📤 Processing form-urlencoded")
+                text = request.form.get('text', '')
+                if not text:
+                    text = request.form.get('textarea', '')
+                print(f"📝 Text from form: {len(text)} characters")
+            
+            # Raw text 처리
+            elif request.content_type and 'text/plain' in request.content_type:
+                print(f"📤 Processing plain text")
+                text = request.get_data(as_text=True)
+                print(f"📝 Raw text: {len(text)} characters")
+            
+            # 기본값 처리 - 모든 가능한 필드 확인
+            else:
+                print(f"📤 Processing fallback options")
+                # 여러 필드명 시도
+                possible_fields = ['text', 'textarea', 'content', 'data']
+                for field in possible_fields:
+                    if request.form and field in request.form:
+                        text = request.form.get(field, '')
+                        if text:
+                            print(f"📝 Text found in field '{field}': {len(text)} characters")
+                            break
+                
+                # URL 파라미터도 확인
+                if not text:
+                    for field in possible_fields:
+                        if field in request.args:
+                            text = request.args.get(field, '')
+                            if text:
+                                print(f"📝 Text found in URL param '{field}': {len(text)} characters")
+                                break
+                
+                if not text:
+                    print(f"⚠️ No text found. Content-Type: {request.content_type}")
+                    print(f"   Available form fields: {dict(request.form) if request.form else 'None'}")
+                    print(f"   Available URL params: {dict(request.args) if request.args else 'None'}")
+                    
+                    return jsonify({
+                        "error": "Unsupported Content-Type or no text found",
+                        "message": f"지원하지 않는 Content-Type이거나 텍스트를 찾을 수 없습니다: {request.content_type}",
+                        "supported_types": ["application/json", "multipart/form-data", "application/x-www-form-urlencoded", "text/plain"],
+                        "available_fields": list(request.form.keys()) if request.form else [],
+                        "status": "error"
+                    }), 415
+            
+        except Exception as parse_error:
+            print(f"❌ Request parsing error: {str(parse_error)}")
+            return jsonify({
+                "error": "Request parsing failed",
+                "message": f"요청 파싱 중 오류가 발생했습니다: {str(parse_error)}",
+                "status": "error"
+            }), 400
         
         if not text or not text.strip():
             return jsonify({"error": "No text provided or text is empty"}), 400
