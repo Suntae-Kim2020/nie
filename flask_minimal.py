@@ -145,11 +145,20 @@ def generate_wordcloud():
         # 디버깅: 요청 정보 로깅
         print(f"🔍 Request debugging:")
         print(f"   Content-Type: {request.content_type}")
+        print(f"   Content-Length: {request.content_length}")
         print(f"   Method: {request.method}")
         print(f"   Is JSON: {request.is_json}")
         print(f"   Form keys: {list(request.form.keys()) if request.form else []}")
+        print(f"   Form data: {dict(request.form) if request.form else {}}")
         print(f"   Files keys: {list(request.files.keys()) if request.files else []}")
         print(f"   Args keys: {list(request.args.keys()) if request.args else []}")
+        print(f"   Raw data length: {len(request.get_data()) if request.get_data() else 0}")
+        
+        # 요청 헤더도 확인
+        print(f"   Headers:")
+        for header, value in request.headers:
+            if header.lower() in ['content-type', 'content-length', 'accept', 'user-agent']:
+                print(f"     {header}: {value}")
         
         # 다양한 Content-Type 지원
         text = ''
