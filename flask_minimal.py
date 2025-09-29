@@ -14,6 +14,9 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
+# Set maximum request size to 50MB to handle large text files
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB
+
 # 한글 폰트 경로 설정 (Cloud Run 환경 고려)
 def get_korean_font_path():
     """한글 폰트 경로를 자동으로 찾습니다."""
@@ -82,6 +85,24 @@ def health():
 def favicon():
     return '', 204
 
+# Error handlers
+@app.errorhandler(413)
+def request_entity_too_large(error):
+    return jsonify({
+        "error": "Request Entity Too Large",
+        "message": "요청 크기가 너무 큽니다. 텍스트를 줄여주세요.",
+        "max_size": "50MB",
+        "status": "error"
+    }), 413
+
+@app.errorhandler(500)
+def internal_error(error):
+    return jsonify({
+        "error": "Internal Server Error",
+        "message": "서버 내부 오류가 발생했습니다.",
+        "status": "error"
+    }), 500
+
 @app.route('/generate', methods=['POST'])  
 def generate():
     """기존 템플릿에서 사용하는 /generate 엔드포인트"""
@@ -103,52 +124,104 @@ def generate_wordcloud():
                 "status": "error"
             }), 500
         
+        # Request 크기 체크
+        content_length = request.content_length
+        if content_length and content_length > app.config['MAX_CONTENT_LENGTH']:
+            return jsonify({
+                "error": "Request too large",
+                "message": f"요청 크기가 {content_length/1024/1024:.1f}MB로 너무 큽니다. 최대 50MB까지 허용됩니다.",
+                "status": "error"
+            }), 413
+        
         data = request.get_json()
-        text = data.get('text', 'Hello World 안녕하세요')
+        if not data:
+            return jsonify({"error": "No JSON data provided"}), 400
+            
+        text = data.get('text', '')
+        if not text or not text.strip():
+            return jsonify({"error": "No text provided or text is empty"}), 400
         
-        if not text.strip():
-            return jsonify({"error": "No text provided"}), 400
+        # 텍스트 길이 체크 및 제한
+        text_size_mb = len(text.encode('utf-8')) / (1024 * 1024)
+        print(f"📊 Text size: {text_size_mb:.2f}MB, length: {len(text)} characters")
         
-        # WordCloud 생성 (안전한 설정으로)
+        if text_size_mb > 5:  # 5MB 이상의 텍스트는 자름
+            print("⚠️ Text too large, truncating to 5MB...")
+            text = text[:int(5 * 1024 * 1024 / 4)]  # UTF-8에서 한 글자당 평균 4바이트로 추정
+            print(f"✂️ Text truncated to {len(text)} characters")
+        
+        # WordCloud 생성 (메모리 효율적 설정)
         try:
-            print(f"Generating WordCloud with text: {text[:50]}...")
-            print(f"Korean font path: {KOREAN_FONT_PATH}")
+            print(f"🎨 Generating WordCloud with {len(text)} characters...")
+            print(f"🔤 Korean font path: {KOREAN_FONT_PATH}")
+            
+            # 메모리 사용량을 줄이기 위해 이미지 크기 조정
+            if text_size_mb > 2:
+                width, height = 600, 300  # 큰 텍스트는 작은 이미지
+                max_words = 80
+                dpi = 100
+            elif text_size_mb > 1:
+                width, height = 700, 350
+                max_words = 90
+                dpi = 120
+            else:
+                width, height = 800, 400
+                max_words = 100
+                dpi = 150
+            
+            print(f"📏 Image settings: {width}x{height}, max_words: {max_words}, dpi: {dpi}")
             
             wordcloud = WordCloud(
                 font_path=KOREAN_FONT_PATH,
-                width=800,
-                height=400,
+                width=width,
+                height=height,
                 background_color='white',
-                max_words=100,
+                max_words=max_words,
                 relative_scaling=0.5,
-                colormap='viridis'
+                colormap='viridis',
+                collocations=False,  # 메모리 절약
+                prefer_horizontal=0.7
             ).generate(text)
             
-            print("WordCloud generated successfully")
+            print("✅ WordCloud generated successfully")
             
-            # 이미지를 base64로 변환
+            # 이미지를 base64로 변환 (메모리 효율적)
             img_buffer = io.BytesIO()
-            plt.figure(figsize=(10, 5))
+            plt.figure(figsize=(width/100, height/100))
             plt.imshow(wordcloud, interpolation='bilinear')
             plt.axis('off')
             plt.tight_layout(pad=0)
-            plt.savefig(img_buffer, format='png', bbox_inches='tight', dpi=150)
-            plt.close()
+            plt.savefig(img_buffer, format='png', bbox_inches='tight', dpi=dpi, 
+                       facecolor='white', edgecolor='none')
+            plt.close()  # 메모리 해제
             
-            print("Image saved to buffer")
+            print("💾 Image saved to buffer")
             
             img_buffer.seek(0)
-            img_str = base64.b64encode(img_buffer.getvalue()).decode()
+            img_data = img_buffer.getvalue()
+            img_size_mb = len(img_data) / (1024 * 1024)
+            print(f"🖼️ Generated image size: {img_size_mb:.2f}MB")
             
-            print("Image encoded to base64")
+            img_str = base64.b64encode(img_data).decode()
+            
+            # 메모리 정리
+            img_buffer.close()
+            del img_data
+            
+            print("✅ Image encoded to base64 successfully")
             
             return jsonify({
                 "status": "success",
-                "image": f"data:image/png;base64,{img_str}"
+                "image": f"data:image/png;base64,{img_str}",
+                "info": {
+                    "text_size_mb": round(text_size_mb, 2),
+                    "image_size_mb": round(img_size_mb, 2),
+                    "max_words": max_words
+                }
             })
             
         except Exception as wc_error:
-            print(f"WordCloud generation error: {str(wc_error)}")
+            print(f"❌ WordCloud generation error: {str(wc_error)}")
             import traceback
             traceback.print_exc()
             return jsonify({
@@ -158,6 +231,9 @@ def generate_wordcloud():
             }), 500
         
     except Exception as e:
+        print(f"❌ Server error: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({
             "error": "Server error",
             "message": str(e),

@@ -110,7 +110,7 @@ jobs:
           --platform=managed \
           --allow-unauthenticated \
           --port=5000 \
-          --memory=512Mi \
+          --memory=1Gi \
           --cpu=1 \
           --timeout=300
         
