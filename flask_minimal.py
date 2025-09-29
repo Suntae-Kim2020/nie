@@ -6,6 +6,8 @@ Enhanced Flask app with WordCloud functionality for Cloud Run
 import os
 import io
 import base64
+import json
+from datetime import datetime
 from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
 
@@ -31,6 +33,21 @@ def get_korean_font_path():
     return None
 
 KOREAN_FONT_PATH = get_korean_font_path()
+
+# 사용자 불용어 파일 경로
+USER_STOPWORDS_FILE = 'user_stopwords.json'
+
+def load_user_stopwords():
+    """저장된 사용자 정의 불용어 로드"""
+    try:
+        if os.path.exists(USER_STOPWORDS_FILE):
+            with open(USER_STOPWORDS_FILE, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                return set(data.get('stopwords', []))
+        return set()
+    except Exception as e:
+        print(f"사용자 불용어 로드 오류: {e}")
+        return set()
 
 @app.route('/')
 def index():
@@ -60,6 +77,15 @@ def health():
         "korean_font_available": KOREAN_FONT_PATH is not None,
         "font_path": KOREAN_FONT_PATH
     }
+
+@app.route('/favicon.ico')
+def favicon():
+    return '', 204
+
+@app.route('/generate', methods=['POST'])  
+def generate():
+    """기존 템플릿에서 사용하는 /generate 엔드포인트"""
+    return generate_wordcloud()
 
 @app.route('/generate_wordcloud', methods=['POST'])
 def generate_wordcloud():
@@ -125,6 +151,42 @@ def generate_wordcloud():
             "message": str(e),
             "status": "error"
         }), 500
+
+@app.route('/get_saved_stopwords')
+def get_saved_stopwords():
+    """저장된 사용자 불용어 조회"""
+    try:
+        user_stopwords = load_user_stopwords()
+        stopwords_text = ', '.join(sorted(user_stopwords)) if user_stopwords else ''
+        
+        return jsonify({
+            'success': True,
+            'stopwords': stopwords_text,
+            'count': len(user_stopwords)
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/clear_saved_stopwords', methods=['POST'])
+def clear_saved_stopwords():
+    """저장된 사용자 불용어 초기화"""
+    try:
+        if os.path.exists(USER_STOPWORDS_FILE):
+            os.remove(USER_STOPWORDS_FILE)
+        
+        return jsonify({
+            'success': True,
+            'message': '저장된 불용어가 모두 삭제되었습니다.'
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/download')
+def download_wordcloud():
+    """워드클라우드 이미지 다운로드"""
+    # 세션이나 임시 저장소에서 이미지를 가져와서 다운로드 제공
+    # 현재는 간단한 구현
+    return jsonify({'message': '다운로드 기능은 프론트엔드에서 구현됩니다.'})
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
